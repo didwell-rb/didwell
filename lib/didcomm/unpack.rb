@@ -1,0 +1,98 @@
+# frozen_string_literal: true
+
+require "json"
+
+module DIDComm
+  UnpackResult = Struct.new(:message, :metadata, keyword_init: true)
+
+  class Metadata
+    attr_accessor :encrypted, :authenticated, :non_repudiation, :anonymous_sender,
+                  :re_wrapped_in_forward, :encrypted_from, :encrypted_to,
+                  :sign_from, :from_prior_issuer_kid, :enc_alg_auth, :enc_alg_anon,
+                  :sign_alg, :signed_message, :from_prior_jwt
+
+    def initialize
+      @encrypted = false
+      @authenticated = false
+      @non_repudiation = false
+      @anonymous_sender = false
+      @re_wrapped_in_forward = false
+    end
+  end
+
+  UnpackConfig = Struct.new(:expect_decrypt_by_all_keys, :unwrap_re_wrapping_forward, keyword_init: true) do
+    def initialize(expect_decrypt_by_all_keys: false, unwrap_re_wrapping_forward: true)
+      super
+    end
+  end
+
+  def self.unpack(packed_msg, resolvers_config:, unpack_config: nil)
+    unpack_config ||= UnpackConfig.new
+
+    msg_hash = if packed_msg.is_a?(String)
+                 JSON.parse(packed_msg)
+               elsif packed_msg.is_a?(Hash)
+                 packed_msg
+               else
+                 raise ValueError, "unexpected type of packed_message: '#{packed_msg.class}'"
+               end
+
+    metadata = Metadata.new
+
+    do_unpack(resolvers_config, msg_hash, unpack_config, metadata)
+  end
+
+  private_class_method def self.do_unpack(resolvers_config, msg_hash, unpack_config, metadata)
+    if Crypto::JWEEnvelope.anoncrypted?(msg_hash)
+      result = Crypto::Anoncrypt.unpack(msg_hash, resolvers_config,
+                                        decrypt_by_all_keys: unpack_config.expect_decrypt_by_all_keys)
+      msg_hash = JSON.parse(result[:msg])
+
+      metadata.encrypted = true
+      metadata.anonymous_sender = true
+      metadata.encrypted_to = result[:to_kids]
+      metadata.enc_alg_anon = result[:alg]
+
+      if unpack_config.unwrap_re_wrapping_forward && Protocols::Routing::Forward.forward?(msg_hash)
+        fwd = Protocols::Routing::Forward.parse(msg_hash)
+        if Keys::ForwardNextKeysSelector.has_keys_for_forward_next?(fwd[:next], resolvers_config)
+          metadata.re_wrapped_in_forward = true
+          return do_unpack(resolvers_config, fwd[:forwarded_msg], unpack_config, metadata)
+        end
+      end
+    end
+
+    if Crypto::JWEEnvelope.authcrypted?(msg_hash)
+      result = Crypto::Authcrypt.unpack(msg_hash, resolvers_config,
+                                        decrypt_by_all_keys: unpack_config.expect_decrypt_by_all_keys)
+      msg_hash = JSON.parse(result[:msg])
+
+      metadata.encrypted = true
+      metadata.authenticated = true
+      metadata.encrypted_from = result[:frm_kid]
+      metadata.encrypted_to = result[:to_kids]
+      metadata.enc_alg_auth = result[:alg]
+    end
+
+    if Crypto::JWSEnvelope.signed?(msg_hash)
+      result = Crypto::Sign.unpack(msg_hash, resolvers_config)
+      metadata.signed_message = JSON.generate(msg_hash)
+      msg_hash = JSON.parse(result[:msg])
+
+      metadata.non_repudiation = true
+      metadata.authenticated = true
+      metadata.sign_from = result[:sign_frm_kid]
+      metadata.sign_alg = result[:alg]
+    end
+
+    if msg_hash["from_prior"].is_a?(String)
+      metadata.from_prior_jwt = msg_hash["from_prior"]
+      from_prior_result = FromPriorModule.unpack_from_prior(msg_hash, resolvers_config)
+      metadata.from_prior_issuer_kid = from_prior_result
+    end
+
+    message = Message.from_hash(msg_hash)
+
+    UnpackResult.new(message: message, metadata: metadata)
+  end
+end

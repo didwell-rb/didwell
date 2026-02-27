@@ -1,0 +1,24 @@
+# frozen_string_literal: true
+
+require "json"
+
+module DIDComm
+  PackSignedResult = Struct.new(:packed_msg, :sign_from_kid, :from_prior_issuer_kid, keyword_init: true)
+
+  def self.pack_signed(message, sign_from:, resolvers_config:)
+    msg_hash = message.is_a?(Message) ? message.to_hash : message
+
+    # from_prior packing
+    from_prior_issuer_kid = FromPriorModule.pack_from_prior(msg_hash, resolvers_config)
+
+    sign_result = Crypto::Sign.pack(msg_hash, sign_from, resolvers_config)
+
+    packed_msg = JSON.generate(sign_result[:msg])
+
+    PackSignedResult.new(
+      packed_msg: packed_msg,
+      sign_from_kid: sign_result[:sign_frm_kid],
+      from_prior_issuer_kid: from_prior_issuer_kid
+    )
+  end
+end
