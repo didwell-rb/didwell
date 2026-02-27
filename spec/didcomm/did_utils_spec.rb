@@ -19,8 +19,19 @@ RSpec.describe DIDComm::DIDUtils do
       expect(described_class.is_did("did:web:example.com:path:sub")).to be true
     end
 
-    it "accepts percent-encoded chars" do
+    it "accepts valid percent-encoded chars" do
       expect(described_class.is_did("did:web:example.com%3A3000")).to be true
+      expect(described_class.is_did("did:example:%C3%A9")).to be true
+    end
+
+    it "rejects bare percent sign" do
+      expect(described_class.is_did("did:example:abc%")).to be false
+    end
+
+    it "rejects percent with invalid hex digits" do
+      expect(described_class.is_did("did:example:abc%GG")).to be false
+      expect(described_class.is_did("did:example:abc%0")).to be false
+      expect(described_class.is_did("did:example:abc%ZZ")).to be false
     end
 
     it "rejects strings without did: prefix" do

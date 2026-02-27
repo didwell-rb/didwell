@@ -2,10 +2,13 @@
 
 module DIDComm
   module DIDUtils
-    # W3C DID grammar: did ":" method-name ":" method-specific-id
-    # method-specific-id = *( *idchar ":" ) 1*idchar
-    # idchar = ALPHA / DIGIT / "." / "-" / "_" / pct-encoded
-    IDCHAR = '[a-zA-Z0-9._%-]'
+    # W3C DID grammar (https://www.w3.org/TR/did-1.1/#did-syntax):
+    #   did                = "did:" method-name ":" method-specific-id
+    #   method-specific-id = *( *idchar ":" ) 1*idchar
+    #   idchar             = ALPHA / DIGIT / "." / "-" / "_" / pct-encoded
+    #   pct-encoded        = "%" HEXDIG HEXDIG
+    PCT_ENCODED = '%[0-9A-Fa-f]{2}'
+    IDCHAR = "(?:[a-zA-Z0-9._-]|#{PCT_ENCODED})"
     METHOD_SPECIFIC_ID = "(?:#{IDCHAR}+:)*#{IDCHAR}+"
     DID_BASE = "did:[a-z0-9]+:#{METHOD_SPECIFIC_ID}"
 
