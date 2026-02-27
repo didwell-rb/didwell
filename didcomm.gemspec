@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.summary = "DIDComm v2 messaging protocol implementation"
   spec.description = "Ruby implementation of DIDComm v2 secure messaging using Decentralized Identifiers (DIDs)"
   spec.homepage = "https://github.com/didcomm/didcomm-ruby"
-  spec.license = "Apache-2.0"
+  spec.license = "MIT"
   spec.required_ruby_version = ">= 3.0"
 
   spec.files = Dir["lib/**/*.rb"]
