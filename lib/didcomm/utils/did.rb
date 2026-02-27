@@ -2,8 +2,15 @@
 
 module DIDComm
   module DIDUtils
-    DID_PATTERN = /\Adid:[a-z0-9]+:.+\z/
-    DID_URL_PATTERN = /\Adid:[a-z0-9]+:.+#.+\z/
+    # W3C DID grammar: did ":" method-name ":" method-specific-id
+    # method-specific-id = *( *idchar ":" ) 1*idchar
+    # idchar = ALPHA / DIGIT / "." / "-" / "_" / pct-encoded
+    IDCHAR = '[a-zA-Z0-9._%-]'
+    METHOD_SPECIFIC_ID = "(?:#{IDCHAR}+:)*#{IDCHAR}+"
+    DID_BASE = "did:[a-z0-9]+:#{METHOD_SPECIFIC_ID}"
+
+    DID_PATTERN = /\A#{DID_BASE}(?:##{IDCHAR}+)?\z/
+    DID_URL_PATTERN = /\A#{DID_BASE}##{IDCHAR}+\z/
 
     def self.is_did(str)
       DID_PATTERN.match?(str)
