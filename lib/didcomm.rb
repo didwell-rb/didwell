@@ -51,22 +51,3 @@ require_relative "didcomm/pack_signed"
 require_relative "didcomm/pack_encrypted"
 require_relative "didcomm/unpack"
 
-module DIDComm
-  # Aliases for DID types — zero changes needed in internal code
-  DIDDoc = DID::Document
-  VerificationMethod = DID::VerificationMethod
-  DIDResolver = DID::Resolver
-  DIDResolverInMemory = DID::ResolverInMemory
-  Secret = DID::Secret
-  SecretsResolver = DID::SecretsResolver
-  SecretsResolverInMemory = DID::SecretsResolverInMemory
-  VerificationMethodType = DID::VerificationMethodType
-  VerificationMaterialFormat = DID::VerificationMaterialFormat
-  VerificationMaterial = DID::VerificationMaterial
-  DIDUtils = DID::Utils
-  DIDDocNotResolvedError = DID::DocumentNotResolvedError
-  DIDUrlNotFoundError = DID::UrlNotFoundError
-  SecretNotFoundError = DID::SecretNotFoundError
-  IncompatibleCryptoError = DID::IncompatibleCryptoError
-  InvalidDIDDocError = DID::InvalidDocumentError
-end

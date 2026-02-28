@@ -15,11 +15,11 @@ module DIDComm
       # Validate — iss and sub must be bare DIDs (no fragment)
       iss = from_prior["iss"]
       sub = from_prior["sub"]
-      raise ValueError, "from_prior iss is not a valid DID" unless DIDUtils.is_did(iss)
-      raise ValueError, "from_prior iss must be a DID, not a DID URL" if DIDUtils.is_did_url(iss)
-      raise ValueError, "from_prior sub is not a valid DID" unless DIDUtils.is_did(sub)
-      raise ValueError, "from_prior sub must be a DID, not a DID URL" if DIDUtils.is_did_url(sub)
-      if issuer_kid && DIDUtils.did_from_did_url(issuer_kid) != from_prior["iss"]
+      raise ValueError, "from_prior iss is not a valid DID" unless DID::Utils.is_did(iss)
+      raise ValueError, "from_prior iss must be a DID, not a DID URL" if DID::Utils.is_did_url(iss)
+      raise ValueError, "from_prior sub is not a valid DID" unless DID::Utils.is_did(sub)
+      raise ValueError, "from_prior sub must be a DID, not a DID URL" if DID::Utils.is_did_url(sub)
+      if issuer_kid && DID::Utils.did_from_did_url(issuer_kid) != from_prior["iss"]
         raise ValueError, "issuer_kid does not belong to from_prior iss"
       end
       raise ValueError, "from_prior iss must differ from sub" if from_prior["iss"] == from_prior["sub"]
@@ -70,7 +70,7 @@ module DIDComm
       raise MalformedMessageError.new(:invalid_plaintext, "Missing kid in from_prior header") unless issuer_kid
 
       # Validate kid is DID URL with fragment
-      raise MalformedMessageError.new(:invalid_plaintext, "from_prior kid is not a valid DID URL") unless DIDUtils.is_did_url(issuer_kid)
+      raise MalformedMessageError.new(:invalid_plaintext, "from_prior kid is not a valid DID URL") unless DID::Utils.is_did_url(issuer_kid)
 
       # Verify signature
       vm = Keys::SignKeysSelector.find_verification_key(issuer_kid, resolvers_config)

@@ -139,11 +139,11 @@ RSpec.describe "Crypto primitives" do
     end
 
     it "extracts Ed25519 key from JWK" do
-      secret = DIDComm::Secret.new(
+      secret = DID::Secret.new(
         kid: "did:example:alice#key-1",
-        type: DIDComm::VerificationMethodType::JSON_WEB_KEY_2020,
-        verification_material: DIDComm::VerificationMaterial.new(
-          format: DIDComm::VerificationMaterialFormat::JWK,
+        type: DID::VerificationMethodType::JSON_WEB_KEY_2020,
+        verification_material: DID::VerificationMaterial.new(
+          format: DID::VerificationMaterialFormat::JWK,
           value: JSON.generate({
             "kty" => "OKP", "crv" => "Ed25519",
             "x" => "G-boxFB6vOZBu-wXkm-9Lh79I8nf9Z50cILaOgKKGww",
@@ -159,10 +159,10 @@ RSpec.describe "Crypto primitives" do
     end
 
     it "determines sign algorithm" do
-      secret_ed = DIDComm::Secret.new(
-        kid: "k1", type: DIDComm::VerificationMethodType::JSON_WEB_KEY_2020,
-        verification_material: DIDComm::VerificationMaterial.new(
-          format: DIDComm::VerificationMaterialFormat::JWK,
+      secret_ed = DID::Secret.new(
+        kid: "k1", type: DID::VerificationMethodType::JSON_WEB_KEY_2020,
+        verification_material: DID::VerificationMaterial.new(
+          format: DID::VerificationMaterialFormat::JWK,
           value: '{"kty":"OKP","crv":"Ed25519","x":"test"}'
         )
       )

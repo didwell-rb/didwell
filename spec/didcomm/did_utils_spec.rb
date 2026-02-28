@@ -2,7 +2,7 @@
 
 require_relative "didcomm_helper"
 
-RSpec.describe DIDComm::DIDUtils do
+RSpec.describe DID::Utils do
   describe ".is_did" do
     it "accepts bare DIDs" do
       expect(described_class.is_did("did:example:alice")).to be true

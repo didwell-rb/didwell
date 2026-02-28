@@ -15,12 +15,12 @@ module DIDComm
         kid = vm.respond_to?(:kid) ? vm.kid : vm.id
 
         case material.format
-        when VerificationMaterialFormat::JWK
+        when DID::VerificationMaterialFormat::JWK
           jwk = material.value.is_a?(String) ? JSON.parse(material.value) : material.value
           import_jwk(jwk, kid)
-        when VerificationMaterialFormat::BASE58
+        when DID::VerificationMaterialFormat::BASE58
           import_base58(vm, kid)
-        when VerificationMaterialFormat::MULTIBASE
+        when DID::VerificationMaterialFormat::MULTIBASE
           import_multibase(vm, kid)
         else
           raise UnsupportedError, "Unsupported verification material format: #{material.format}"
@@ -33,7 +33,7 @@ module DIDComm
         type = vm.type
 
         case type
-        when VerificationMethodType::JSON_WEB_KEY_2020
+        when DID::VerificationMethodType::JSON_WEB_KEY_2020
           jwk = material.value.is_a?(String) ? JSON.parse(material.value) : material.value
           case jwk["kty"]
           when "OKP"
@@ -50,8 +50,8 @@ module DIDComm
           else
             raise UnsupportedError, "Unsupported key type: #{jwk["kty"]}"
           end
-        when VerificationMethodType::ED25519_VERIFICATION_KEY_2018,
-             VerificationMethodType::ED25519_VERIFICATION_KEY_2020
+        when DID::VerificationMethodType::ED25519_VERIFICATION_KEY_2018,
+             DID::VerificationMethodType::ED25519_VERIFICATION_KEY_2020
           SignAlg::ED25519
         else
           raise UnsupportedError, "Cannot determine sign algorithm for type: #{type}"
@@ -70,14 +70,14 @@ module DIDComm
         type = vm.type
 
         case type
-        when VerificationMethodType::JSON_WEB_KEY_2020
+        when DID::VerificationMethodType::JSON_WEB_KEY_2020
           jwk = material.value.is_a?(String) ? JSON.parse(material.value) : material.value
           jwk["crv"]
-        when VerificationMethodType::X25519_KEY_AGREEMENT_KEY_2019,
-             VerificationMethodType::X25519_KEY_AGREEMENT_KEY_2020
+        when DID::VerificationMethodType::X25519_KEY_AGREEMENT_KEY_2019,
+             DID::VerificationMethodType::X25519_KEY_AGREEMENT_KEY_2020
           "X25519"
-        when VerificationMethodType::ED25519_VERIFICATION_KEY_2018,
-             VerificationMethodType::ED25519_VERIFICATION_KEY_2020
+        when DID::VerificationMethodType::ED25519_VERIFICATION_KEY_2018,
+             DID::VerificationMethodType::ED25519_VERIFICATION_KEY_2020
           "Ed25519"
         else
           nil
@@ -187,12 +187,12 @@ module DIDComm
         raw_value = Base58.base58_to_binary(material.value, :bitcoin)
 
         crv = case type
-              when VerificationMethodType::X25519_KEY_AGREEMENT_KEY_2019 then "X25519"
-              when VerificationMethodType::ED25519_VERIFICATION_KEY_2018 then "Ed25519"
+              when DID::VerificationMethodType::X25519_KEY_AGREEMENT_KEY_2019 then "X25519"
+              when DID::VerificationMethodType::ED25519_VERIFICATION_KEY_2018 then "Ed25519"
               else raise UnsupportedError, "Unsupported type for Base58: #{type}"
               end
 
-        if method_or_secret.is_a?(Secret)
+        if method_or_secret.is_a?(DID::Secret)
           if crv == "X25519" && raw_value.bytesize == 32
             # X25519: private key only, derive public
             require "rbnacl"
@@ -237,12 +237,12 @@ module DIDComm
         codec, raw_value = Multicodec.decode(raw_prefixed)
 
         crv = case type
-              when VerificationMethodType::X25519_KEY_AGREEMENT_KEY_2020 then "X25519"
-              when VerificationMethodType::ED25519_VERIFICATION_KEY_2020 then "Ed25519"
+              when DID::VerificationMethodType::X25519_KEY_AGREEMENT_KEY_2020 then "X25519"
+              when DID::VerificationMethodType::ED25519_VERIFICATION_KEY_2020 then "Ed25519"
               else raise UnsupportedError, "Unsupported type for Multibase: #{type}"
               end
 
-        if method_or_secret.is_a?(Secret)
+        if method_or_secret.is_a?(DID::Secret)
           if crv == "X25519" && raw_value.bytesize == 32
             # X25519: private key only, derive public
             require "rbnacl"

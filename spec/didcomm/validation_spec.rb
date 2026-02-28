@@ -99,15 +99,15 @@ RSpec.describe "Input validation" do
   describe "AnoncryptKeysSelector nil check" do
     it "raises when first verification method is not found" do
       # Create a DID doc with key_agreement referencing a non-existent VM
-      bad_doc = DIDComm::DIDDoc.new(
+      bad_doc = DID::Document.new(
         id: "did:example:bad",
         key_agreement: ["did:example:bad#nonexistent-key"],
         verification_method: []
       )
-      resolver = DIDComm::DIDResolverInMemory.new([bad_doc])
+      resolver = DID::ResolverInMemory.new([bad_doc])
       config = DIDComm::ResolversConfig.new(
         did_resolver: resolver,
-        secrets_resolver: DIDComm::SecretsResolverInMemory.new([])
+        secrets_resolver: DID::SecretsResolverInMemory.new([])
       )
 
       expect {
@@ -118,15 +118,15 @@ RSpec.describe "Input validation" do
 
   describe "AuthcryptKeysSelector validation" do
     it "raises when sender has no key_agreement keys" do
-      empty_doc = DIDComm::DIDDoc.new(
+      empty_doc = DID::Document.new(
         id: "did:example:empty",
         key_agreement: [],
         verification_method: []
       )
-      resolver = DIDComm::DIDResolverInMemory.new([empty_doc, TestVectors.bob_did_doc])
+      resolver = DID::ResolverInMemory.new([empty_doc, TestVectors.bob_did_doc])
       config = DIDComm::ResolversConfig.new(
         did_resolver: resolver,
-        secrets_resolver: DIDComm::SecretsResolverInMemory.new([])
+        secrets_resolver: DID::SecretsResolverInMemory.new([])
       )
 
       expect {
@@ -137,15 +137,15 @@ RSpec.describe "Input validation" do
     end
 
     it "raises when recipient has no key_agreement keys" do
-      empty_doc = DIDComm::DIDDoc.new(
+      empty_doc = DID::Document.new(
         id: "did:example:empty",
         key_agreement: [],
         verification_method: []
       )
-      resolver = DIDComm::DIDResolverInMemory.new([TestVectors.alice_did_doc, empty_doc])
+      resolver = DID::ResolverInMemory.new([TestVectors.alice_did_doc, empty_doc])
       config = DIDComm::ResolversConfig.new(
         did_resolver: resolver,
-        secrets_resolver: DIDComm::SecretsResolverInMemory.new(TestVectors.alice_secrets)
+        secrets_resolver: DID::SecretsResolverInMemory.new(TestVectors.alice_secrets)
       )
 
       expect {
@@ -157,26 +157,26 @@ RSpec.describe "Input validation" do
 
     it "raises when sender kid is not in key_agreement on unpack" do
       # Create a DID doc where the kid exists as a VM but isn't in key_agreement
-      doc_with_auth_only = DIDComm::DIDDoc.new(
+      doc_with_auth_only = DID::Document.new(
         id: "did:example:authonly",
         authentication: ["did:example:authonly#key-1"],
         key_agreement: [],
         verification_method: [
-          DIDComm::VerificationMethod.new(
+          DID::VerificationMethod.new(
             id: "did:example:authonly#key-1",
             controller: "did:example:authonly",
-            type: DIDComm::VerificationMethodType::JSON_WEB_KEY_2020,
-            verification_material: DIDComm::VerificationMaterial.new(
-              format: DIDComm::VerificationMaterialFormat::JWK,
+            type: DID::VerificationMethodType::JSON_WEB_KEY_2020,
+            verification_material: DID::VerificationMaterial.new(
+              format: DID::VerificationMaterialFormat::JWK,
               value: { "kty" => "OKP", "crv" => "X25519", "x" => "avH0O2Y4tqLAq8y9zpianr8ajii5m4F_mICrzNlatXs" }
             )
           )
         ]
       )
-      resolver = DIDComm::DIDResolverInMemory.new([doc_with_auth_only, TestVectors.bob_did_doc])
+      resolver = DID::ResolverInMemory.new([doc_with_auth_only, TestVectors.bob_did_doc])
       config = DIDComm::ResolversConfig.new(
         did_resolver: resolver,
-        secrets_resolver: DIDComm::SecretsResolverInMemory.new(TestVectors.bob_secrets)
+        secrets_resolver: DID::SecretsResolverInMemory.new(TestVectors.bob_secrets)
       )
 
       expect {
@@ -354,9 +354,9 @@ RSpec.describe "Input validation" do
 
         jwk = JSON.parse(secret.verification_material.value)
         jwk["d"] = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-        DIDComm::Secret.new(
+        DID::Secret.new(
           kid: secret.kid, type: secret.type,
-          verification_material: DIDComm::VerificationMaterial.new(
+          verification_material: DID::VerificationMaterial.new(
             format: secret.verification_material.format,
             value: JSON.generate(jwk)
           )
@@ -365,7 +365,7 @@ RSpec.describe "Input validation" do
 
       bad_resolvers_bob = DIDComm::ResolversConfig.new(
         did_resolver: resolvers_bob.did_resolver,
-        secrets_resolver: DIDComm::SecretsResolverInMemory.new(bad_bob_secrets)
+        secrets_resolver: DID::SecretsResolverInMemory.new(bad_bob_secrets)
       )
 
       relaxed = DIDComm.unpack(pack_result.packed_msg, resolvers_config: bad_resolvers_bob)
@@ -382,9 +382,9 @@ RSpec.describe "Input validation" do
 
         jwk = JSON.parse(secret.verification_material.value)
         jwk["d"] = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-        DIDComm::Secret.new(
+        DID::Secret.new(
           kid: secret.kid, type: secret.type,
-          verification_material: DIDComm::VerificationMaterial.new(
+          verification_material: DID::VerificationMaterial.new(
             format: secret.verification_material.format,
             value: JSON.generate(jwk)
           )
@@ -393,7 +393,7 @@ RSpec.describe "Input validation" do
 
       bad_resolvers_bob = DIDComm::ResolversConfig.new(
         did_resolver: resolvers_bob.did_resolver,
-        secrets_resolver: DIDComm::SecretsResolverInMemory.new(bad_bob_secrets)
+        secrets_resolver: DID::SecretsResolverInMemory.new(bad_bob_secrets)
       )
 
       expect {
@@ -419,10 +419,10 @@ RSpec.describe "Input validation" do
       ]
 
       bad_resolvers = DIDComm::ResolversConfig.new(
-        did_resolver: DIDComm::DIDResolverInMemory.new([
+        did_resolver: DID::ResolverInMemory.new([
           TestVectors.alice_did_doc, bob_with_bad_service, TestVectors.charlie_did_doc
         ]),
-        secrets_resolver: DIDComm::SecretsResolverInMemory.new(TestVectors.alice_secrets)
+        secrets_resolver: DID::SecretsResolverInMemory.new(TestVectors.alice_secrets)
       )
 
       expect {
@@ -444,10 +444,10 @@ RSpec.describe "Input validation" do
       ]
 
       routed_resolvers = DIDComm::ResolversConfig.new(
-        did_resolver: DIDComm::DIDResolverInMemory.new([
+        did_resolver: DID::ResolverInMemory.new([
           TestVectors.alice_did_doc, bob_with_service, TestVectors.charlie_did_doc
         ]),
-        secrets_resolver: DIDComm::SecretsResolverInMemory.new(TestVectors.alice_secrets)
+        secrets_resolver: DID::SecretsResolverInMemory.new(TestVectors.alice_secrets)
       )
 
       result = DIDComm.pack_encrypted(message, to: "did:example:bob", resolvers_config: routed_resolvers)

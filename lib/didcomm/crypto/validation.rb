@@ -45,7 +45,7 @@ module DIDComm
         recipients.each do |r|
           kid = r.dig("header", "kid")
           raise MalformedMessageError.new(:invalid_message, "Missing kid in recipient") unless kid
-          unless DIDUtils.is_did_url(kid)
+          unless DID::Utils.is_did_url(kid)
             raise MalformedMessageError.new(:invalid_message, "Recipient kid is not a valid DID URL")
           end
         end
@@ -58,7 +58,7 @@ module DIDComm
         apu_value = KeyUtils.base64url_decode(apu)
         apu_str = apu_value.force_encoding("UTF-8")
 
-        unless DIDUtils.is_did_url(apu_str)
+        unless DID::Utils.is_did_url(apu_str)
           raise MalformedMessageError.new(:invalid_message, "APU is not a valid DID URL")
         end
 

@@ -22,12 +22,12 @@ module DIDComm
     pack_config ||= PackEncryptedConfig.new
 
     # Validate inputs
-    raise ValueError, "'to' is not a valid DID or DID URL" unless DIDUtils.is_did(to)
+    raise ValueError, "'to' is not a valid DID or DID URL" unless DID::Utils.is_did(to)
     if from
-      raise ValueError, "'from' is not a valid DID or DID URL" unless DIDUtils.is_did(from)
+      raise ValueError, "'from' is not a valid DID or DID URL" unless DID::Utils.is_did(from)
     end
     if sign_from
-      raise ValueError, "'sign_from' is not a valid DID or DID URL" unless DIDUtils.is_did(sign_from)
+      raise ValueError, "'sign_from' is not a valid DID or DID URL" unless DID::Utils.is_did(sign_from)
     end
 
     msg_hash = message.is_a?(Message) ? message.to_hash : message
@@ -91,7 +91,7 @@ module DIDComm
   end
 
   private_class_method def self.try_forward_wrap(packed_msg_hash, to, pack_config, resolvers_config)
-    did, _kid = DIDUtils.did_or_url(to)
+    did, _kid = DID::Utils.did_or_url(to)
     did_doc = resolvers_config.did_resolver.resolve(did)
     return nil unless did_doc
 
@@ -117,14 +117,14 @@ module DIDComm
       raise ValueError, "message 'to' value is not a list: #{message_to}"
     end
 
-    to_did, _to_kid = DIDUtils.did_or_url(to)
+    to_did, _to_kid = DID::Utils.did_or_url(to)
     if message_to && !message_to.include?(to_did)
       raise ValueError, "message 'to' value #{message_to} does not contain 'to' DID #{to_did}"
     end
 
     message_from = msg_hash["from"] || msg_hash[:from]
     if from && message_from
-      from_did, _from_kid = DIDUtils.did_or_url(from)
+      from_did, _from_kid = DID::Utils.did_or_url(from)
       if from_did != message_from
         raise ValueError, "message 'from' value #{message_from} does not match 'from' DID #{from_did}"
       end

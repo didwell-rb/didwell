@@ -2,13 +2,13 @@
 
 require_relative "didcomm_helper"
 
-RSpec.describe DIDComm::DIDDoc do
+RSpec.describe DID::Document do
   let(:doc) { TestVectors.alice_did_doc }
 
   it "resolves verification methods by ID" do
     vm = doc.get_verification_method("did:example:alice#key-1")
     expect(vm).not_to be_nil
-    expect(vm.type).to eq(DIDComm::VerificationMethodType::JSON_WEB_KEY_2020)
+    expect(vm.type).to eq(DID::VerificationMethodType::JSON_WEB_KEY_2020)
   end
 
   it "returns nil for unknown verification method" do
@@ -29,22 +29,22 @@ RSpec.describe DIDComm::DIDDoc do
   end
 end
 
-RSpec.describe DIDComm::DIDResolverInMemory do
+RSpec.describe DID::ResolverInMemory do
   it "resolves known DIDs" do
-    resolver = DIDComm::DIDResolverInMemory.new([TestVectors.alice_did_doc])
+    resolver = DID::ResolverInMemory.new([TestVectors.alice_did_doc])
     doc = resolver.resolve("did:example:alice")
     expect(doc).not_to be_nil
     expect(doc.id).to eq("did:example:alice")
   end
 
   it "returns nil for unknown DIDs" do
-    resolver = DIDComm::DIDResolverInMemory.new([])
+    resolver = DID::ResolverInMemory.new([])
     expect(resolver.resolve("did:example:unknown")).to be_nil
   end
 end
 
-RSpec.describe DIDComm::SecretsResolverInMemory do
-  let(:resolver) { DIDComm::SecretsResolverInMemory.new(TestVectors.alice_secrets) }
+RSpec.describe DID::SecretsResolverInMemory do
+  let(:resolver) { DID::SecretsResolverInMemory.new(TestVectors.alice_secrets) }
 
   it "finds a key by kid" do
     secret = resolver.get_key("did:example:alice#key-1")
@@ -69,7 +69,7 @@ end
 
 RSpec.describe DIDComm::DIDCommService, ".find_in" do
   it "returns service with empty accept list" do
-    doc = DIDComm::DIDDoc.new(
+    doc = DID::Document.new(
       id: "did:example:test",
       service: [
         DIDComm::DIDCommService.new(id: "svc-1", service_endpoint: "http://example.com", accept: [])
@@ -79,7 +79,7 @@ RSpec.describe DIDComm::DIDCommService, ".find_in" do
   end
 
   it "returns service that accepts didcomm/v2" do
-    doc = DIDComm::DIDDoc.new(
+    doc = DID::Document.new(
       id: "did:example:test",
       service: [
         DIDComm::DIDCommService.new(id: "svc-1", service_endpoint: "http://example.com", accept: ["didcomm/v2"])
@@ -89,7 +89,7 @@ RSpec.describe DIDComm::DIDCommService, ".find_in" do
   end
 
   it "rejects service that only accepts didcomm/v1" do
-    doc = DIDComm::DIDDoc.new(
+    doc = DID::Document.new(
       id: "did:example:test",
       service: [
         DIDComm::DIDCommService.new(id: "svc-1", service_endpoint: "http://example.com", accept: ["didcomm/v1"])
@@ -99,7 +99,7 @@ RSpec.describe DIDComm::DIDCommService, ".find_in" do
   end
 
   it "picks the first compatible service" do
-    doc = DIDComm::DIDDoc.new(
+    doc = DID::Document.new(
       id: "did:example:test",
       service: [
         DIDComm::DIDCommService.new(id: "svc-v1", service_endpoint: "http://v1.example.com", accept: ["didcomm/v1"]),
@@ -111,7 +111,7 @@ RSpec.describe DIDComm::DIDCommService, ".find_in" do
   end
 
   it "finds by service_id" do
-    doc = DIDComm::DIDDoc.new(
+    doc = DID::Document.new(
       id: "did:example:test",
       service: [
         DIDComm::DIDCommService.new(id: "svc-1", service_endpoint: "http://example.com"),

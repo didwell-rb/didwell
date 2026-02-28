@@ -4,7 +4,7 @@ module DIDComm
   module Keys
     module ForwardNextKeysSelector
       def self.has_keys_for_forward_next?(next_did_or_kid, resolvers_config)
-        did, kid = DIDUtils.did_or_url(next_did_or_kid)
+        did, kid = DID::Utils.did_or_url(next_did_or_kid)
 
         did_doc = resolvers_config.did_resolver.resolve(did)
         return false unless did_doc
