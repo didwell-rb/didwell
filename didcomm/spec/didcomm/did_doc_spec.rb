@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "spec_helper"
+require_relative "../spec_helper"
 
 RSpec.describe DIDComm::DIDDoc do
   let(:doc) { TestVectors.alice_did_doc }
