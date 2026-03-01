@@ -24,7 +24,7 @@ module DIDRain
         # @api private
         MAX_REDIRECTS = 3
         # @api private
-        ALLOWED_CONTENT_TYPES = %w[application/json application/did+ld+json application/ld+json].freeze
+        ALLOWED_CONTENT_TYPES = %w[application/json application/did+json application/did+ld+json application/ld+json].freeze
 
         # @param fetcher [#call, nil] callable that takes a URL string and returns the response body.
         #   Defaults to an internal HTTPS fetcher.

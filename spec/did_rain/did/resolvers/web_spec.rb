@@ -214,4 +214,96 @@ RSpec.describe DIDRain::DID::Resolvers::Web do
       end
     end
   end
+
+  describe "default fetcher" do
+    let(:did) { "did:web:example.com" }
+    let(:json_body) { did_document_json(did) }
+    let(:http) { instance_double(Net::HTTP) }
+
+    subject(:resolver) { described_class.new }
+
+    before do
+      allow(Net::HTTP).to receive(:new).and_return(http)
+      allow(http).to receive(:use_ssl=)
+      allow(http).to receive(:open_timeout=)
+      allow(http).to receive(:read_timeout=)
+    end
+
+    def success_response(body, content_type: nil)
+      response = Net::HTTPOK.new("1.1", "200", "OK")
+      response["content-type"] = content_type if content_type
+      allow(response).to receive(:body).and_return(body)
+      response
+    end
+
+    def redirect_response(location)
+      response = Net::HTTPFound.new("1.1", "302", "Found")
+      response["location"] = location
+      response
+    end
+
+    describe "Content-Type validation" do
+      it "accepts application/json" do
+        allow(http).to receive(:request).and_return(success_response(json_body, content_type: "application/json"))
+        expect(resolver.resolve(did).id).to eq(did)
+      end
+
+      it "accepts application/did+json" do
+        allow(http).to receive(:request).and_return(success_response(json_body, content_type: "application/did+json"))
+        expect(resolver.resolve(did).id).to eq(did)
+      end
+
+      it "accepts application/did+ld+json" do
+        allow(http).to receive(:request).and_return(success_response(json_body, content_type: "application/did+ld+json"))
+        expect(resolver.resolve(did).id).to eq(did)
+      end
+
+      it "accepts responses without Content-Type" do
+        allow(http).to receive(:request).and_return(success_response(json_body))
+        expect(resolver.resolve(did).id).to eq(did)
+      end
+
+      it "accepts Content-Type with charset parameter" do
+        allow(http).to receive(:request).and_return(success_response(json_body, content_type: "application/json; charset=utf-8"))
+        expect(resolver.resolve(did).id).to eq(did)
+      end
+
+      it "rejects text/html" do
+        allow(http).to receive(:request).and_return(success_response("<html></html>", content_type: "text/html"))
+        expect { resolver.resolve(did) }.to raise_error(DIDRain::DID::DocumentNotResolvedError)
+      end
+    end
+
+    describe "redirect handling" do
+      it "follows HTTPS redirects" do
+        redirect = redirect_response("https://other.com/.well-known/did.json")
+        success = success_response(json_body, content_type: "application/json")
+        allow(http).to receive(:request).and_return(redirect, success)
+
+        expect(resolver.resolve(did).id).to eq(did)
+      end
+
+      it "rejects HTTP redirects" do
+        redirect = redirect_response("http://example.com/.well-known/did.json")
+        allow(http).to receive(:request).and_return(redirect)
+
+        expect { resolver.resolve(did) }.to raise_error(DIDRain::DID::DocumentNotResolvedError)
+      end
+
+      it "follows relative redirects" do
+        redirect = redirect_response("/other/did.json")
+        success = success_response(json_body, content_type: "application/json")
+        allow(http).to receive(:request).and_return(redirect, success)
+
+        expect(resolver.resolve(did).id).to eq(did)
+      end
+
+      it "raises after exceeding max redirects" do
+        redirect = redirect_response("https://example.com/.well-known/did.json")
+        allow(http).to receive(:request).and_return(redirect)
+
+        expect { resolver.resolve(did) }.to raise_error(DIDRain::DID::DocumentNotResolvedError)
+      end
+    end
+  end
 end
