@@ -20,9 +20,11 @@ module DIDRain
         include DID::Resolver
 
         # @api private
-        IP_ADDRESS_PATTERN = /\A\d{1,3}(\.\d{1,3}){3}\z/
+        IPV4_PATTERN = /\A\d{1,3}(\.\d{1,3}){3}\z/
         # @api private
         MAX_REDIRECTS = 3
+        # @api private
+        ALLOWED_CONTENT_TYPES = %w[application/json application/did+ld+json application/ld+json].freeze
 
         # @param fetcher [#call, nil] callable that takes a URL string and returns the response body.
         #   Defaults to an internal HTTPS fetcher.
@@ -42,14 +44,17 @@ module DIDRain
           raise InvalidDocumentError, "Malformed did:web identifier" if parts.length < 3
           raise InvalidDocumentError, "Not a did:web identifier" unless parts[0] == "did" && parts[1] == "web"
 
-          domain = URI.decode_www_form_component(parts[2])
+          domain = percent_decode(parts[2])
+          raise InvalidDocumentError, "Malformed did:web identifier" if domain.empty?
+          raise InvalidDocumentError, "did:web MUST NOT contain userinfo" if domain.include?("@")
+
           host = domain.split(":").first
-          raise InvalidDocumentError, "did:web MUST NOT use IP addresses" if host.match?(IP_ADDRESS_PATTERN)
+          raise InvalidDocumentError, "did:web MUST NOT use IP addresses" if ip_address?(host)
 
           if parts.length == 3
             "https://#{domain}/.well-known/did.json"
           else
-            path = parts[3..].map { |p| URI.decode_www_form_component(p) }.join("/")
+            path = parts[3..].join("/")
             "https://#{domain}/#{path}/did.json"
           end
         end
@@ -70,7 +75,24 @@ module DIDRain
           raise InvalidDocumentError, "Document id '#{doc.id}' does not match DID '#{did}'" if doc.id != did
 
           doc
+        rescue DocumentNotResolvedError
+          raise DocumentNotResolvedError, did
         end
+
+        # RFC 3986 percent-decoding without `+` to space conversion.
+        # @api private
+        def self.percent_decode(str)
+          str.gsub(/%[0-9A-Fa-f]{2}/) { |match| [match[1..2].to_i(16)].pack("C") }
+        end
+
+        # @api private
+        def self.ip_address?(host)
+          return true if host.match?(IPV4_PATTERN)
+          return true if host.start_with?("[")
+          false
+        end
+
+        private_class_method :percent_decode, :ip_address?
 
         private
 
@@ -93,15 +115,24 @@ module DIDRain
 
           case response
           when Net::HTTPSuccess
+            validate_content_type!(response, uri)
             response.body
           when Net::HTTPRedirection
-            location = URI.parse(response["location"])
+            location = URI.join(uri, response["location"])
             raise DocumentNotResolvedError, uri.to_s unless location.scheme == "https"
 
             fetch_with_redirects(location, open_timeout, read_timeout, remaining_redirects - 1)
           else
             raise DocumentNotResolvedError, uri.to_s
           end
+        end
+
+        def validate_content_type!(response, uri)
+          content_type = response["content-type"]&.split(";")&.first&.strip&.downcase
+          return if content_type.nil?
+          return if ALLOWED_CONTENT_TYPES.include?(content_type)
+
+          raise DocumentNotResolvedError, uri.to_s
         end
       end
     end

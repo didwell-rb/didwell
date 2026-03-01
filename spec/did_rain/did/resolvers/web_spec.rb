@@ -49,9 +49,34 @@ RSpec.describe DIDRain::DID::Resolvers::Web do
         .to raise_error(DIDRain::DID::InvalidDocumentError, /Malformed/)
     end
 
-    it "raises InvalidDocumentError for an IP address" do
+    it "raises InvalidDocumentError for an IPv4 address" do
       expect { described_class.did_to_url("did:web:192.168.1.1") }
         .to raise_error(DIDRain::DID::InvalidDocumentError, /IP address/)
+    end
+
+    it "raises InvalidDocumentError for an IPv6 address" do
+      expect { described_class.did_to_url("did:web:%5B%3A%3A1%5D") }
+        .to raise_error(DIDRain::DID::InvalidDocumentError, /IP address/)
+    end
+
+    it "raises InvalidDocumentError for userinfo in domain (SSRF prevention)" do
+      expect { described_class.did_to_url("did:web:foo.com%40127.0.0.1") }
+        .to raise_error(DIDRain::DID::InvalidDocumentError, /userinfo/)
+    end
+
+    it "raises InvalidDocumentError for an empty domain" do
+      expect { described_class.did_to_url("did:web::alice") }
+        .to raise_error(DIDRain::DID::InvalidDocumentError, /Malformed/)
+    end
+
+    it "preserves percent-encoding in path segments" do
+      expect(described_class.did_to_url("did:web:example.com:user%2Falice"))
+        .to eq("https://example.com/user%2Falice/did.json")
+    end
+
+    it "does not convert + to space in path segments" do
+      expect(described_class.did_to_url("did:web:example.com:a+b"))
+        .to eq("https://example.com/a+b/did.json")
     end
 
     it "raises InvalidDocumentError for a non-did:web identifier" do
@@ -149,6 +174,17 @@ RSpec.describe DIDRain::DID::Resolvers::Web do
       it "raises InvalidDocumentError from the Parser" do
         expect { resolver.resolve(did) }
           .to raise_error(DIDRain::DID::InvalidDocumentError, /id/)
+      end
+    end
+
+    context "when the fetcher raises DocumentNotResolvedError" do
+      let(:did) { "did:web:example.com" }
+      let(:fetcher) { ->(_url) { raise DIDRain::DID::DocumentNotResolvedError, "https://example.com/.well-known/did.json" } }
+      subject(:resolver) { described_class.new(fetcher: fetcher) }
+
+      it "re-raises with the DID, not the URL" do
+        expect { resolver.resolve(did) }
+          .to raise_error(DIDRain::DID::DocumentNotResolvedError, /did:web:example\.com/)
       end
     end
 
