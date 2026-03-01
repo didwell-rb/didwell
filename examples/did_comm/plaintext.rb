@@ -5,7 +5,7 @@
 # Useful for understanding the DIDComm message structure.
 #
 # Run:
-#   ruby -I lib examples/plaintext.rb
+#   ruby -I lib examples/did_comm/plaintext.rb
 
 require_relative "helpers"
 

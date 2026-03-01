@@ -1,4 +1,4 @@
-# DIDWell
+# DID Rain
 
 Ruby toolkit for Decentralized Identifiers (DIDs).
 
@@ -25,17 +25,18 @@ This project was developed with the assistance of Claude and GPT, referencing th
 ## Installation
 
 ```ruby
-gem "didwell"
+gem "did_rain"
 ```
 
 ```ruby
-require "didwell"
+require "did_rain"
 ```
 
 ## Usage
 
 ```ruby
-require "didwell"
+require "did_rain"
+include DIDRain
 
 # Implement DID::Resolver and DID::SecretsResolver,
 # or use the provided in-memory variants for testing.

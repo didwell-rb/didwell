@@ -7,7 +7,7 @@
 # Both parties need Ed25519 (signing) + X25519 (encryption) keys.
 #
 # Run:
-#   ruby -I lib examples/authcrypt.rb
+#   ruby -I lib examples/did_comm/authcrypt.rb
 
 require_relative "helpers"
 

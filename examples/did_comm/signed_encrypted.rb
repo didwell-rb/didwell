@@ -6,7 +6,7 @@
 # Bob can decrypt AND prove to a third party that Alice sent it.
 #
 # Run:
-#   ruby -I lib examples/signed_encrypted.rb
+#   ruby -I lib examples/did_comm/signed_encrypted.rb
 
 require_relative "helpers"
 

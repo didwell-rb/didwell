@@ -5,7 +5,7 @@
 # from an old DID to a new one, using a signed JWT in the message.
 #
 # Run:
-#   ruby -I lib examples/did_rotation.rb
+#   ruby -I lib examples/did_comm/did_rotation.rb
 
 require_relative "helpers"
 

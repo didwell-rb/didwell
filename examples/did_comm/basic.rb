@@ -5,7 +5,7 @@
 # Bob can decrypt it but cannot verify who sent it.
 #
 # Run:
-#   ruby -I lib examples/basic.rb
+#   ruby -I lib examples/did_comm/basic.rb
 
 require_relative "helpers"
 
