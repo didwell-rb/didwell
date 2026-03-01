@@ -2,24 +2,24 @@
 
 require_relative "../../spec_helper"
 
-RSpec.describe DID::SecretsResolverInMemory do
+RSpec.describe DIDRain::DID::SecretsResolverInMemory do
   let(:secret1) do
-    DID::Secret.new(
+    DIDRain::DID::Secret.new(
       kid: "did:example:alice#key-1",
-      type: DID::VerificationMethodType::JSON_WEB_KEY_2020,
-      verification_material: DID::VerificationMaterial.new(format: DID::VerificationMaterialFormat::JWK, value: "{}")
+      type: DIDRain::DID::VerificationMethodType::JSON_WEB_KEY_2020,
+      verification_material: DIDRain::DID::VerificationMaterial.new(format: DIDRain::DID::VerificationMaterialFormat::JWK, value: "{}")
     )
   end
 
   let(:secret2) do
-    DID::Secret.new(
+    DIDRain::DID::Secret.new(
       kid: "did:example:alice#key-2",
-      type: DID::VerificationMethodType::JSON_WEB_KEY_2020,
-      verification_material: DID::VerificationMaterial.new(format: DID::VerificationMaterialFormat::JWK, value: "{}")
+      type: DIDRain::DID::VerificationMethodType::JSON_WEB_KEY_2020,
+      verification_material: DIDRain::DID::VerificationMaterial.new(format: DIDRain::DID::VerificationMaterialFormat::JWK, value: "{}")
     )
   end
 
-  let(:resolver) { DID::SecretsResolverInMemory.new([secret1, secret2]) }
+  let(:resolver) { DIDRain::DID::SecretsResolverInMemory.new([secret1, secret2]) }
 
   it "finds a key by kid" do
     secret = resolver.get_key("did:example:alice#key-1")
@@ -42,9 +42,9 @@ RSpec.describe DID::SecretsResolverInMemory do
   end
 end
 
-RSpec.describe DID::SecretsResolver do
+RSpec.describe DIDRain::DID::SecretsResolver do
   it "raises NotImplementedError for unimplemented methods" do
-    klass = Class.new { include DID::SecretsResolver }
+    klass = Class.new { include DIDRain::DID::SecretsResolver }
     instance = klass.new
     expect { instance.get_key("kid") }.to raise_error(NotImplementedError)
     expect { instance.get_keys(["kid"]) }.to raise_error(NotImplementedError)

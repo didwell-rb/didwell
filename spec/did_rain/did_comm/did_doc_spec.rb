@@ -2,13 +2,13 @@
 
 require_relative "didcomm_helper"
 
-RSpec.describe DID::Document do
+RSpec.describe DIDRain::DID::Document do
   let(:doc) { TestVectors.alice_did_doc }
 
   it "resolves verification methods by ID" do
     vm = doc.get_verification_method("did:example:alice#key-1")
     expect(vm).not_to be_nil
-    expect(vm.type).to eq(DID::VerificationMethodType::JSON_WEB_KEY_2020)
+    expect(vm.type).to eq(DIDRain::DID::VerificationMethodType::JSON_WEB_KEY_2020)
   end
 
   it "returns nil for unknown verification method" do
@@ -29,22 +29,22 @@ RSpec.describe DID::Document do
   end
 end
 
-RSpec.describe DID::ResolverInMemory do
+RSpec.describe DIDRain::DID::ResolverInMemory do
   it "resolves known DIDs" do
-    resolver = DID::ResolverInMemory.new([TestVectors.alice_did_doc])
+    resolver = DIDRain::DID::ResolverInMemory.new([TestVectors.alice_did_doc])
     doc = resolver.resolve("did:example:alice")
     expect(doc).not_to be_nil
     expect(doc.id).to eq("did:example:alice")
   end
 
   it "returns nil for unknown DIDs" do
-    resolver = DID::ResolverInMemory.new([])
+    resolver = DIDRain::DID::ResolverInMemory.new([])
     expect(resolver.resolve("did:example:unknown")).to be_nil
   end
 end
 
-RSpec.describe DID::SecretsResolverInMemory do
-  let(:resolver) { DID::SecretsResolverInMemory.new(TestVectors.alice_secrets) }
+RSpec.describe DIDRain::DID::SecretsResolverInMemory do
+  let(:resolver) { DIDRain::DID::SecretsResolverInMemory.new(TestVectors.alice_secrets) }
 
   it "finds a key by kid" do
     secret = resolver.get_key("did:example:alice#key-1")
@@ -67,58 +67,58 @@ RSpec.describe DID::SecretsResolverInMemory do
   end
 end
 
-RSpec.describe DIDComm::Service, ".find_in" do
+RSpec.describe DIDRain::DIDComm::Service, ".find_in" do
   it "returns service with empty accept list" do
-    doc = DID::Document.new(
+    doc = DIDRain::DID::Document.new(
       id: "did:example:test",
       service: [
-        DIDComm::Service.new(id: "svc-1", service_endpoint: "http://example.com", accept: [])
+        DIDRain::DIDComm::Service.new(id: "svc-1", service_endpoint: "http://example.com", accept: [])
       ]
     )
-    expect(DIDComm::Service.find_in(doc)).not_to be_nil
+    expect(DIDRain::DIDComm::Service.find_in(doc)).not_to be_nil
   end
 
   it "returns service that accepts didcomm/v2" do
-    doc = DID::Document.new(
+    doc = DIDRain::DID::Document.new(
       id: "did:example:test",
       service: [
-        DIDComm::Service.new(id: "svc-1", service_endpoint: "http://example.com", accept: ["didcomm/v2"])
+        DIDRain::DIDComm::Service.new(id: "svc-1", service_endpoint: "http://example.com", accept: ["didcomm/v2"])
       ]
     )
-    expect(DIDComm::Service.find_in(doc)).not_to be_nil
+    expect(DIDRain::DIDComm::Service.find_in(doc)).not_to be_nil
   end
 
   it "rejects service that only accepts didcomm/v1" do
-    doc = DID::Document.new(
+    doc = DIDRain::DID::Document.new(
       id: "did:example:test",
       service: [
-        DIDComm::Service.new(id: "svc-1", service_endpoint: "http://example.com", accept: ["didcomm/v1"])
+        DIDRain::DIDComm::Service.new(id: "svc-1", service_endpoint: "http://example.com", accept: ["didcomm/v1"])
       ]
     )
-    expect(DIDComm::Service.find_in(doc)).to be_nil
+    expect(DIDRain::DIDComm::Service.find_in(doc)).to be_nil
   end
 
   it "picks the first compatible service" do
-    doc = DID::Document.new(
+    doc = DIDRain::DID::Document.new(
       id: "did:example:test",
       service: [
-        DIDComm::Service.new(id: "svc-v1", service_endpoint: "http://v1.example.com", accept: ["didcomm/v1"]),
-        DIDComm::Service.new(id: "svc-v2", service_endpoint: "http://v2.example.com", accept: ["didcomm/v2"])
+        DIDRain::DIDComm::Service.new(id: "svc-v1", service_endpoint: "http://v1.example.com", accept: ["didcomm/v1"]),
+        DIDRain::DIDComm::Service.new(id: "svc-v2", service_endpoint: "http://v2.example.com", accept: ["didcomm/v2"])
       ]
     )
-    svc = DIDComm::Service.find_in(doc)
+    svc = DIDRain::DIDComm::Service.find_in(doc)
     expect(svc.id).to eq("svc-v2")
   end
 
   it "finds by service_id" do
-    doc = DID::Document.new(
+    doc = DIDRain::DID::Document.new(
       id: "did:example:test",
       service: [
-        DIDComm::Service.new(id: "svc-1", service_endpoint: "http://example.com"),
-        DIDComm::Service.new(id: "svc-2", service_endpoint: "http://other.com")
+        DIDRain::DIDComm::Service.new(id: "svc-1", service_endpoint: "http://example.com"),
+        DIDRain::DIDComm::Service.new(id: "svc-2", service_endpoint: "http://other.com")
       ]
     )
-    svc = DIDComm::Service.find_in(doc, "svc-2")
+    svc = DIDRain::DIDComm::Service.find_in(doc, "svc-2")
     expect(svc.id).to eq("svc-2")
   end
 end

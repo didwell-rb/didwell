@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "did_rain"
-include DIDRain
 require "json"
 
 RSpec.configure do |config|

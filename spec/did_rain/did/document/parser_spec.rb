@@ -2,7 +2,7 @@
 
 require_relative "../../../spec_helper"
 
-RSpec.describe DID::Document::Parser do
+RSpec.describe DIDRain::DID::Document::Parser do
   describe ".parse" do
     it "parses a minimal document with only id" do
       doc = described_class.parse("id" => "did:example:123")
@@ -61,7 +61,7 @@ RSpec.describe DID::Document::Parser do
       expect(vm.id).to eq("did:example:123#key-1")
       expect(vm.type).to eq("JsonWebKey2020")
       expect(vm.controller).to eq("did:example:123")
-      expect(vm.verification_material.format).to eq(DID::VerificationMaterialFormat::JWK)
+      expect(vm.verification_material.format).to eq(DIDRain::DID::VerificationMaterialFormat::JWK)
       expect(vm.verification_material.value).to eq(jwk)
     end
 
@@ -79,7 +79,7 @@ RSpec.describe DID::Document::Parser do
       )
 
       vm = doc.verification_method.first
-      expect(vm.verification_material.format).to eq(DID::VerificationMaterialFormat::MULTIBASE)
+      expect(vm.verification_material.format).to eq(DIDRain::DID::VerificationMaterialFormat::MULTIBASE)
       expect(vm.verification_material.value).to eq("z6Mkf5rGMoatrSj1f4CyvuHBeXJELe9RPdzo2PKGNCKVtZxP")
     end
 
@@ -97,7 +97,7 @@ RSpec.describe DID::Document::Parser do
       )
 
       vm = doc.verification_method.first
-      expect(vm.verification_material.format).to eq(DID::VerificationMaterialFormat::BASE58)
+      expect(vm.verification_material.format).to eq(DIDRain::DID::VerificationMaterialFormat::BASE58)
       expect(vm.verification_material.value).to eq("3M5RCDjHi5FQbiVB6p5ParVnLCLXfGmwEogjywRFDSga")
     end
 
@@ -202,7 +202,7 @@ RSpec.describe DID::Document::Parser do
 
       expect(doc.service.size).to eq(1)
       svc = doc.service.first
-      expect(svc).to be_a(DID::Service)
+      expect(svc).to be_a(DIDRain::DID::Service)
       expect(svc.id).to eq("did:example:123#linked-domain")
       expect(svc.type).to eq("LinkedDomains")
       expect(svc.service_endpoint).to eq("https://example.com")
@@ -258,17 +258,17 @@ RSpec.describe DID::Document::Parser do
   describe "validation" do
     it "raises on non-hash input" do
       expect { described_class.parse("not a hash") }
-        .to raise_error(DID::InvalidDocumentError, /must be a Hash/)
+        .to raise_error(DIDRain::DID::InvalidDocumentError, /must be a Hash/)
     end
 
     it "raises when id is missing" do
       expect { described_class.parse({}) }
-        .to raise_error(DID::InvalidDocumentError, /must have an 'id' field/)
+        .to raise_error(DIDRain::DID::InvalidDocumentError, /must have an 'id' field/)
     end
 
     it "raises when id is not a valid DID" do
       expect { described_class.parse("id" => "not-a-did") }
-        .to raise_error(DID::InvalidDocumentError, /must be a valid DID/)
+        .to raise_error(DIDRain::DID::InvalidDocumentError, /must be a valid DID/)
     end
   end
 end

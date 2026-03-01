@@ -2,9 +2,9 @@
 
 require_relative "../../spec_helper"
 
-RSpec.describe DID::ResolverInMemory do
-  let(:doc) { DID::Document.new(id: "did:example:alice") }
-  let(:resolver) { DID::ResolverInMemory.new([doc]) }
+RSpec.describe DIDRain::DID::ResolverInMemory do
+  let(:doc) { DIDRain::DID::Document.new(id: "did:example:alice") }
+  let(:resolver) { DIDRain::DID::ResolverInMemory.new([doc]) }
 
   it "resolves known DIDs" do
     result = resolver.resolve("did:example:alice")
@@ -17,9 +17,9 @@ RSpec.describe DID::ResolverInMemory do
   end
 end
 
-RSpec.describe DID::Resolver do
+RSpec.describe DIDRain::DID::Resolver do
   it "raises NotImplementedError for unimplemented resolve" do
-    klass = Class.new { include DID::Resolver }
+    klass = Class.new { include DIDRain::DID::Resolver }
     expect { klass.new.resolve("did:example:test") }.to raise_error(NotImplementedError)
   end
 end

@@ -4,7 +4,7 @@ require_relative "../../../spec_helper"
 require "rbnacl"
 require "base58"
 
-RSpec.describe DID::Resolvers::Key do
+RSpec.describe DIDRain::DID::Resolvers::Key do
   subject(:resolver) { described_class.new }
 
   describe "#resolve" do
@@ -15,9 +15,9 @@ RSpec.describe DID::Resolvers::Key do
       let(:ed_bytes) { verify_key.to_bytes }
       let(:did) { "did:key:z" + Base58.binary_to_base58("\xED\x01".b + ed_bytes, :bitcoin) }
 
-      it "returns a DID::Document" do
+      it "returns a DIDRain::DID::Document" do
         doc = resolver.resolve(did)
-        expect(doc).to be_a(DID::Document)
+        expect(doc).to be_a(DIDRain::DID::Document)
         expect(doc.id).to eq(did)
       end
 
@@ -27,7 +27,7 @@ RSpec.describe DID::Resolvers::Key do
         expect(doc.authentication_methods.size).to eq(1)
 
         vm = doc.authentication_methods.first
-        expect(vm.type).to eq(DID::VerificationMethodType::JSON_WEB_KEY_2020)
+        expect(vm.type).to eq(DIDRain::DID::VerificationMethodType::JSON_WEB_KEY_2020)
         expect(vm.controller).to eq(did)
 
         jwk = vm.verification_material.value
@@ -41,7 +41,7 @@ RSpec.describe DID::Resolvers::Key do
         expect(doc.key_agreement_methods.size).to eq(1)
 
         vm = doc.key_agreement_methods.first
-        expect(vm.type).to eq(DID::VerificationMethodType::JSON_WEB_KEY_2020)
+        expect(vm.type).to eq(DIDRain::DID::VerificationMethodType::JSON_WEB_KEY_2020)
 
         jwk = vm.verification_material.value
         expect(jwk["kty"]).to eq("OKP")
@@ -79,9 +79,9 @@ RSpec.describe DID::Resolvers::Key do
       let(:x_bytes) { x_priv.public_key.to_bytes }
       let(:did) { "did:key:z" + Base58.binary_to_base58("\xEC\x01".b + x_bytes, :bitcoin) }
 
-      it "returns a DID::Document" do
+      it "returns a DIDRain::DID::Document" do
         doc = resolver.resolve(did)
-        expect(doc).to be_a(DID::Document)
+        expect(doc).to be_a(DIDRain::DID::Document)
         expect(doc.id).to eq(did)
       end
 
@@ -95,7 +95,7 @@ RSpec.describe DID::Resolvers::Key do
         expect(doc.key_agreement_methods.size).to eq(1)
 
         vm = doc.key_agreement_methods.first
-        expect(vm.type).to eq(DID::VerificationMethodType::JSON_WEB_KEY_2020)
+        expect(vm.type).to eq(DIDRain::DID::VerificationMethodType::JSON_WEB_KEY_2020)
 
         jwk = vm.verification_material.value
         expect(jwk["kty"]).to eq("OKP")
@@ -126,38 +126,38 @@ RSpec.describe DID::Resolvers::Key do
       it "resolves did:key:1:<mb-value> (version 1)" do
         did = "did:key:1:#{mb_value}"
         doc = resolver.resolve(did)
-        expect(doc).to be_a(DID::Document)
+        expect(doc).to be_a(DIDRain::DID::Document)
         expect(doc.id).to eq(did)
       end
 
       it "raises InvalidDocumentError for unsupported versions" do
-        expect { resolver.resolve("did:key:2:#{mb_value}") }.to raise_error(DID::InvalidDocumentError, /version/)
+        expect { resolver.resolve("did:key:2:#{mb_value}") }.to raise_error(DIDRain::DID::InvalidDocumentError, /version/)
       end
     end
 
     context "with invalid did:key values" do
       it "raises InvalidDocumentError for non-multibase encoding" do
-        expect { resolver.resolve("did:key:abc123") }.to raise_error(DID::InvalidDocumentError, /base58btc/)
+        expect { resolver.resolve("did:key:abc123") }.to raise_error(DIDRain::DID::InvalidDocumentError, /base58btc/)
       end
 
       it "raises InvalidDocumentError for invalid base58 characters" do
-        expect { resolver.resolve("did:key:z!!!") }.to raise_error(DID::InvalidDocumentError, /Invalid base58btc/)
+        expect { resolver.resolve("did:key:z!!!") }.to raise_error(DIDRain::DID::InvalidDocumentError, /Invalid base58btc/)
       end
 
       it "raises InvalidDocumentError for truncated data" do
-        expect { resolver.resolve("did:key:z1") }.to raise_error(DID::InvalidDocumentError)
+        expect { resolver.resolve("did:key:z1") }.to raise_error(DIDRain::DID::InvalidDocumentError)
       end
 
       it "raises InvalidDocumentError for unsupported multicodec" do
         bogus = "\x00\x01".b + ("\x00".b * 32)
         did = "did:key:z" + Base58.binary_to_base58(bogus, :bitcoin)
-        expect { resolver.resolve(did) }.to raise_error(DID::InvalidDocumentError, /Unsupported multicodec/)
+        expect { resolver.resolve(did) }.to raise_error(DIDRain::DID::InvalidDocumentError, /Unsupported multicodec/)
       end
 
       it "raises InvalidDocumentError for wrong key length" do
         bad = "\xED\x01".b + ("\x00".b * 16)
         did = "did:key:z" + Base58.binary_to_base58(bad, :bitcoin)
-        expect { resolver.resolve(did) }.to raise_error(DID::InvalidDocumentError, /32 bytes/)
+        expect { resolver.resolve(did) }.to raise_error(DIDRain::DID::InvalidDocumentError, /32 bytes/)
       end
     end
   end

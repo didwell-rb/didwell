@@ -2,16 +2,16 @@
 
 require_relative "../../../spec_helper"
 
-RSpec.describe DID::Document::Renderer do
+RSpec.describe DIDRain::DID::Document::Renderer do
   let(:jwk) { { "kty" => "OKP", "crv" => "Ed25519", "x" => "abc" } }
 
   let(:vm) do
-    DID::VerificationMethod.new(
+    DIDRain::DID::VerificationMethod.new(
       id: "did:example:123#key-1",
-      type: DID::VerificationMethodType::JSON_WEB_KEY_2020,
+      type: DIDRain::DID::VerificationMethodType::JSON_WEB_KEY_2020,
       controller: "did:example:123",
-      verification_material: DID::VerificationMaterial.new(
-        format: DID::VerificationMaterialFormat::JWK,
+      verification_material: DIDRain::DID::VerificationMaterial.new(
+        format: DIDRain::DID::VerificationMaterialFormat::JWK,
         value: jwk
       )
     )
@@ -19,14 +19,14 @@ RSpec.describe DID::Document::Renderer do
 
   describe ".render" do
     it "renders a minimal document" do
-      doc = DID::Document.new(id: "did:example:123")
+      doc = DIDRain::DID::Document.new(id: "did:example:123")
       h = described_class.render(doc)
 
       expect(h).to eq("id" => "did:example:123")
     end
 
     it "omits empty optional fields" do
-      doc = DID::Document.new(id: "did:example:123")
+      doc = DIDRain::DID::Document.new(id: "did:example:123")
       h = described_class.render(doc)
 
       expect(h).not_to have_key("controller")
@@ -41,28 +41,28 @@ RSpec.describe DID::Document::Renderer do
     end
 
     it "renders controller as a string" do
-      doc = DID::Document.new(id: "did:example:123", controller: "did:example:ctrl")
+      doc = DIDRain::DID::Document.new(id: "did:example:123", controller: "did:example:ctrl")
       h = described_class.render(doc)
 
       expect(h["controller"]).to eq("did:example:ctrl")
     end
 
     it "renders controller as an array" do
-      doc = DID::Document.new(id: "did:example:123", controller: ["did:example:c1", "did:example:c2"])
+      doc = DIDRain::DID::Document.new(id: "did:example:123", controller: ["did:example:c1", "did:example:c2"])
       h = described_class.render(doc)
 
       expect(h["controller"]).to eq(["did:example:c1", "did:example:c2"])
     end
 
     it "renders alsoKnownAs" do
-      doc = DID::Document.new(id: "did:example:123", also_known_as: ["https://example.com"])
+      doc = DIDRain::DID::Document.new(id: "did:example:123", also_known_as: ["https://example.com"])
       h = described_class.render(doc)
 
       expect(h["alsoKnownAs"]).to eq(["https://example.com"])
     end
 
     it "renders verification methods" do
-      doc = DID::Document.new(
+      doc = DIDRain::DID::Document.new(
         id: "did:example:123",
         verification_method: [vm]
       )
@@ -79,7 +79,7 @@ RSpec.describe DID::Document::Renderer do
     end
 
     it "renders verification relationships as string refs" do
-      doc = DID::Document.new(
+      doc = DIDRain::DID::Document.new(
         id: "did:example:123",
         verification_method: [vm],
         authentication: ["did:example:123#key-1"],
@@ -92,12 +92,12 @@ RSpec.describe DID::Document::Renderer do
     end
 
     it "renders services" do
-      svc = DID::Service.new(
+      svc = DIDRain::DID::Service.new(
         id: "did:example:123#svc",
         type: "LinkedDomains",
         service_endpoint: "https://example.com"
       )
-      doc = DID::Document.new(id: "did:example:123", service: [svc])
+      doc = DIDRain::DID::Document.new(id: "did:example:123", service: [svc])
       h = described_class.render(doc)
 
       expect(h["service"]).to eq([
@@ -110,12 +110,12 @@ RSpec.describe DID::Document::Renderer do
     end
 
     it "renders a full document" do
-      svc = DID::Service.new(
+      svc = DIDRain::DID::Service.new(
         id: "did:example:123#svc",
         type: "LinkedDomains",
         service_endpoint: "https://example.com"
       )
-      doc = DID::Document.new(
+      doc = DIDRain::DID::Document.new(
         id: "did:example:123",
         controller: "did:example:123",
         also_known_as: ["https://example.com/user"],
@@ -141,7 +141,7 @@ RSpec.describe DID::Document::Renderer do
 
   describe ".render_json" do
     it "returns a JSON string" do
-      doc = DID::Document.new(id: "did:example:123")
+      doc = DIDRain::DID::Document.new(id: "did:example:123")
       json = described_class.render_json(doc)
       parsed = JSON.parse(json)
 
@@ -174,9 +174,9 @@ RSpec.describe DID::Document::Renderer do
         ]
       }
 
-      doc1 = DID::Document::Parser.parse(original_hash)
-      rendered = DID::Document::Renderer.render(doc1)
-      doc2 = DID::Document::Parser.parse(rendered)
+      doc1 = DIDRain::DID::Document::Parser.parse(original_hash)
+      rendered = DIDRain::DID::Document::Renderer.render(doc1)
+      doc2 = DIDRain::DID::Document::Parser.parse(rendered)
 
       expect(doc2.id).to eq(doc1.id)
       expect(doc2.controller).to eq(doc1.controller)
@@ -188,12 +188,12 @@ RSpec.describe DID::Document::Renderer do
     end
 
     it "render → parse → render produces equivalent hashes" do
-      svc = DID::Service.new(
+      svc = DIDRain::DID::Service.new(
         id: "did:example:rt#svc",
         type: "LinkedDomains",
         service_endpoint: "https://example.com"
       )
-      doc = DID::Document.new(
+      doc = DIDRain::DID::Document.new(
         id: "did:example:rt",
         controller: ["did:example:c1"],
         also_known_as: ["https://example.com"],
@@ -202,9 +202,9 @@ RSpec.describe DID::Document::Renderer do
         service: [svc]
       )
 
-      h1 = DID::Document::Renderer.render(doc)
-      doc2 = DID::Document::Parser.parse(h1)
-      h2 = DID::Document::Renderer.render(doc2)
+      h1 = DIDRain::DID::Document::Renderer.render(doc)
+      doc2 = DIDRain::DID::Document::Parser.parse(h1)
+      h2 = DIDRain::DID::Document::Renderer.render(doc2)
 
       expect(h2).to eq(h1)
     end
