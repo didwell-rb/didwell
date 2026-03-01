@@ -4,10 +4,34 @@ require "json"
 
 module DIDRain
   module DIDComm
+    # Packs a DIDComm message with encryption (authenticated or anonymous)
+    # and optional signing and forward wrapping.
     module PackEncrypted
+      # @!attribute packed_msg
+      #   @return [String] the JSON-encoded encrypted message (JWE)
+      # @!attribute to_kids
+      #   @return [Array<String>] recipient key IDs
+      # @!attribute from_kid
+      #   @return [String, nil] sender key ID (present for authenticated encryption)
+      # @!attribute sign_from_kid
+      #   @return [String, nil] signing key ID (present when sign_from was specified)
+      # @!attribute from_prior_issuer_kid
+      #   @return [String, nil] key ID used to sign the from_prior JWT, if present
+      # @!attribute service_metadata
+      #   @return [ServiceMetadata, nil] service endpoint metadata when forward-wrapped
       Result = Data.define(:packed_msg, :to_kids, :from_kid, :sign_from_kid,
                           :from_prior_issuer_kid, :service_metadata)
 
+      # Encryption configuration for pack_encrypted.
+      #
+      # @!attribute enc_alg_auth
+      #   @return [Algs] authenticated encryption algorithm
+      # @!attribute enc_alg_anon
+      #   @return [Algs] anonymous encryption algorithm
+      # @!attribute protect_sender_id
+      #   @return [Boolean] whether to hide the sender by re-encrypting with anoncrypt
+      # @!attribute forward
+      #   @return [Boolean] whether to wrap in a forward message for routing
       Config = Data.define(:enc_alg_auth, :enc_alg_anon, :protect_sender_id, :forward) do
         def initialize(enc_alg_auth: Defaults::DEF_ENC_ALG_AUTH,
                        enc_alg_anon: Defaults::DEF_ENC_ALG_ANON,
@@ -17,8 +41,24 @@ module DIDRain
         end
       end
 
+      # Metadata about the service endpoint used during forward wrapping.
+      #
+      # @!attribute id
+      #   @return [String] service identifier
+      # @!attribute service_endpoint
+      #   @return [String] URI of the service endpoint
       ServiceMetadata = Data.define(:id, :service_endpoint)
 
+      # Pack a message with encryption.
+      #
+      # @param message [Message, Hash] the DIDComm message
+      # @param to [String] DID or DID URL of the recipient
+      # @param from [String, nil] DID or DID URL of the sender (for authenticated encryption)
+      # @param sign_from [String, nil] DID or DID URL of the signer (for non-repudiation)
+      # @param resolvers_config [ResolversConfig] DID and secrets resolvers
+      # @param pack_config [Config, nil] encryption options (defaults used if nil)
+      # @return [Result]
+      # @raise [ValueError] if to, from, or sign_from are not valid DIDs
       def self.call(message, to:, from: nil, sign_from: nil,
                     resolvers_config:, pack_config: nil)
         pack_config ||= Config.new

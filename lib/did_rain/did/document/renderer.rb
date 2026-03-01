@@ -5,11 +5,20 @@ require "json"
 module DIDRain
   module DID
     class Document
+      # Renders a {Document} instance into a W3C-conformant Hash or JSON string.
       class Renderer
+        # Render a DID Document as a JSON string.
+        #
+        # @param document [Document] the document to render
+        # @return [String] JSON-encoded DID Document
         def self.render_json(document)
           JSON.generate(render(document))
         end
 
+        # Render a DID Document as a Hash.
+        #
+        # @param document [Document] the document to render
+        # @return [Hash] W3C-conformant DID Document hash
         def self.render(document)
           h = { "id" => document.id }
 

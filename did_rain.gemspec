@@ -22,4 +22,9 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "rspec", "~> 3.12"
   spec.add_development_dependency "rake", "~> 13.0"
+  # YARD documentation
+  spec.add_development_dependency "yard", "~> 0.9"
+  spec.add_development_dependency "redcarpet", "~> 3.6" # markdown markup
+  spec.add_development_dependency "irb"                  # yard runtime dep, not default gem since Ruby 4.0
+  spec.add_development_dependency "rdoc"                 # yard runtime dep, not default gem since Ruby 4.0
 end

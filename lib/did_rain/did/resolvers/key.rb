@@ -7,12 +7,24 @@ require "rbnacl"
 module DIDRain
   module DID
     module Resolvers
+      # Resolver for `did:key` method identifiers. Supports Ed25519 and X25519 keys.
+      #
+      # @example Resolve a did:key
+      #   resolver = DIDRain::DID::Resolvers::Key.new
+      #   doc = resolver.resolve("did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK")
       class Key
         include DID::Resolver
 
+        # @api private
         MULTICODEC_ED25519 = 0xED
+        # @api private
         MULTICODEC_X25519 = 0xEC
 
+        # Resolve a `did:key` identifier to a DID Document.
+        #
+        # @param did [String] a `did:key:` identifier
+        # @return [Document, nil] the resolved document, or nil if not a did:key
+        # @raise [InvalidDocumentError] if the key encoding is malformed or unsupported
         def resolve(did)
           return nil unless did.start_with?("did:key:")
 

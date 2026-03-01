@@ -4,15 +4,57 @@ require "json"
 
 module DIDRain
   module DIDComm
+    # Unpacks a DIDComm message, automatically detecting the envelope type
+    # (encrypted, signed, plaintext) and unwrapping nested layers.
     module Unpack
+      # @!attribute message
+      #   @return [Message] the unpacked plaintext message
+      # @!attribute metadata
+      #   @return [Metadata] information about the envelope layers that were unwrapped
       Result = Data.define(:message, :metadata)
 
+      # Unpacking configuration.
+      #
+      # @!attribute expect_decrypt_by_all_keys
+      #   @return [Boolean] require decryption to succeed with all recipient keys
+      # @!attribute unwrap_re_wrapping_forward
+      #   @return [Boolean] automatically unwrap forward-wrapped messages
       Config = Data.define(:expect_decrypt_by_all_keys, :unwrap_re_wrapping_forward) do
         def initialize(expect_decrypt_by_all_keys: false, unwrap_re_wrapping_forward: true)
           super
         end
       end
 
+      # Metadata describing the envelope layers that were unwrapped.
+      #
+      # @!attribute encrypted
+      #   @return [Boolean] whether the message was encrypted
+      # @!attribute authenticated
+      #   @return [Boolean] whether the sender is authenticated
+      # @!attribute non_repudiation
+      #   @return [Boolean] whether the message was signed (non-repudiable)
+      # @!attribute anonymous_sender
+      #   @return [Boolean] whether the sender is anonymous
+      # @!attribute re_wrapped_in_forward
+      #   @return [Boolean] whether the message was wrapped in a forward
+      # @!attribute encrypted_from
+      #   @return [String, nil] sender key ID from authenticated encryption
+      # @!attribute encrypted_to
+      #   @return [Array<String>, nil] recipient key IDs
+      # @!attribute sign_from
+      #   @return [String, nil] signer key ID
+      # @!attribute from_prior_issuer_kid
+      #   @return [String, nil] from_prior issuer key ID
+      # @!attribute enc_alg_auth
+      #   @return [Algs, nil] authenticated encryption algorithm used
+      # @!attribute enc_alg_anon
+      #   @return [Algs, nil] anonymous encryption algorithm used
+      # @!attribute sign_alg
+      #   @return [String, nil] signing algorithm used
+      # @!attribute signed_message
+      #   @return [String, nil] the raw signed JWS message before verification
+      # @!attribute from_prior_jwt
+      #   @return [String, nil] the raw from_prior JWT before verification
       class Metadata
         attr_accessor :encrypted, :authenticated, :non_repudiation, :anonymous_sender,
                       :re_wrapped_in_forward, :encrypted_from, :encrypted_to,
@@ -28,6 +70,14 @@ module DIDRain
         end
       end
 
+      # Unpack a DIDComm message.
+      #
+      # @param packed_msg [String, Hash] the packed message (JSON string or parsed Hash)
+      # @param resolvers_config [ResolversConfig] DID and secrets resolvers
+      # @param config [Config, nil] unpacking options (defaults used if nil)
+      # @return [Result] the unpacked message and metadata
+      # @raise [MalformedMessageError] if the message is malformed
+      # @raise [ValueError] if the packed_msg type is unexpected
       def self.call(packed_msg, resolvers_config:, config: nil)
         config ||= Config.new
 

@@ -5,9 +5,34 @@ require "base64"
 
 module DIDRain
   module DIDComm
+    # Represents a DIDComm `from_prior` header used for DID rotation.
+    #
+    # Contains JWT claims that prove the relationship between a prior DID and
+    # a new DID during rotation.
     class FromPrior
+      # @!attribute iss
+      #   @return [String] issuer DID (the prior DID being rotated from)
+      # @!attribute sub
+      #   @return [String] subject DID (the new DID being rotated to)
+      # @!attribute aud
+      #   @return [String, nil] audience
+      # @!attribute exp
+      #   @return [Integer, nil] expiration time
+      # @!attribute nbf
+      #   @return [Integer, nil] not-before time
+      # @!attribute iat
+      #   @return [Integer, nil] issued-at time
+      # @!attribute jti
+      #   @return [String, nil] JWT ID
       attr_accessor :iss, :sub, :aud, :exp, :nbf, :iat, :jti
 
+      # @param iss [String] issuer DID (prior DID)
+      # @param sub [String] subject DID (new DID)
+      # @param aud [String, nil] audience
+      # @param exp [Integer, nil] expiration time
+      # @param nbf [Integer, nil] not-before time
+      # @param iat [Integer, nil] issued-at time
+      # @param jti [String, nil] JWT ID
       def initialize(iss:, sub:, aud: nil, exp: nil, nbf: nil, iat: nil, jti: nil)
         @iss = iss
         @sub = sub
@@ -18,6 +43,7 @@ module DIDRain
         @jti = jti
       end
 
+      # @return [Hash] serialized JWT claims
       def to_hash
         d = { "iss" => @iss, "sub" => @sub }
         d["aud"] = @aud if @aud
@@ -28,6 +54,11 @@ module DIDRain
         d
       end
 
+      # Deserialize a FromPrior from a Hash.
+      #
+      # @param d [Hash] JWT claim set with "iss" and "sub" keys
+      # @return [FromPrior]
+      # @raise [MalformedMessageError] if required fields are missing
       def self.from_hash(d)
         raise MalformedMessageError.new(:invalid_plaintext, "from_prior plaintext is invalid") unless d.is_a?(Hash)
         raise MalformedMessageError.new(:invalid_plaintext, "from_prior missing iss") unless d["iss"]
@@ -44,6 +75,13 @@ module DIDRain
         )
       end
 
+      # Pack a from_prior claim into a signed JWT and replace it in the message hash.
+      #
+      # @param message [Hash] mutable message hash; the "from_prior" key will be replaced with the JWT string
+      # @param resolvers_config [ResolversConfig] DID and secrets resolvers
+      # @param issuer_kid [String, nil] specific key ID for signing; defaults to the issuer DID
+      # @return [String, nil] the issuer key ID used for signing, or nil if no from_prior present
+      # @raise [ValueError] if DID validation fails
       def self.pack(message, resolvers_config, issuer_kid: nil)
         from_prior = message["from_prior"]
         return nil if from_prior.nil?
@@ -91,6 +129,13 @@ module DIDRain
         secret.kid
       end
 
+      # Unpack a from_prior JWT from a message, verify its signature, and replace
+      # the JWT string with the decoded claims hash.
+      #
+      # @param message [Hash] mutable message hash; the "from_prior" JWT string will be replaced with the decoded Hash
+      # @param resolvers_config [ResolversConfig] DID and secrets resolvers
+      # @return [String, nil] the issuer key ID, or nil if no from_prior present
+      # @raise [MalformedMessageError] if the JWT is malformed or signature is invalid
       def self.unpack(message, resolvers_config)
         from_prior_jwt = message["from_prior"]
         return nil unless from_prior_jwt.is_a?(String)

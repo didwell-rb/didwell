@@ -5,7 +5,9 @@ require "json"
 module DIDRain
   module DID
     class Document
+      # Parses a W3C DID Document from a Hash or JSON string into a {Document} instance.
       class Parser
+        # @api private
         RELATIONSHIP_KEYS = {
           "authentication" => :authentication,
           "assertionMethod" => :assertion_method,
@@ -14,10 +16,20 @@ module DIDRain
           "capabilityDelegation" => :capability_delegation
         }.freeze
 
+        # Parse a DID Document from a JSON string.
+        #
+        # @param json_str [String] JSON-encoded DID Document
+        # @return [Document]
+        # @raise [InvalidDocumentError] if the document is invalid
         def self.parse_json(json_str)
           parse(JSON.parse(json_str))
         end
 
+        # Parse a DID Document from a Hash.
+        #
+        # @param hash [Hash] the DID Document as a Hash with string keys
+        # @return [Document]
+        # @raise [InvalidDocumentError] if the document is invalid
         def self.parse(hash)
           validate!(hash)
 

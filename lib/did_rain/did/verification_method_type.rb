@@ -2,6 +2,7 @@
 
 module DIDRain
   module DID
+    # Constants for W3C DID verification method type identifiers.
     module VerificationMethodType
       JSON_WEB_KEY_2020 = "JsonWebKey2020"
       X25519_KEY_AGREEMENT_KEY_2019 = "X25519KeyAgreementKey2019"

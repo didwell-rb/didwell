@@ -2,9 +2,13 @@
 
 module DIDRain
   module DIDComm
+    # Raised when a DIDComm message is malformed, such as invalid plaintext,
+    # bad signatures, or decryption failures.
     class MalformedMessageError < Error
+      # @return [Symbol] error code identifying the failure category
       attr_reader :code
 
+      # Symbolic error codes mapped to numeric identifiers.
       CODES = {
         can_not_decrypt: 1,
         invalid_signature: 2,
@@ -21,6 +25,8 @@ module DIDRain
         not_supported_fwd_protocol: "Not supported Forward protocol"
       }.freeze
 
+      # @param code [Symbol] error code (e.g. :invalid_plaintext, :can_not_decrypt)
+      # @param message [String, nil] optional custom error message
       def initialize(code, message = nil)
         @code = code
         super(message || DEFAULT_MESSAGES[code] || "Unknown error")
