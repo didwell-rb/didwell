@@ -81,7 +81,7 @@ RSpec.describe "DIDComm Integration" do
     it "packs and unpacks with X25519 XC20P" do
       pack_result = DIDComm.pack_encrypted(message, to: "did:example:bob",
                                             resolvers_config: resolvers_alice,
-                                            pack_config: DIDComm::PackEncryptedConfig.new(
+                                            pack_config: DIDComm::PackEncrypted::Config.new(
                                               enc_alg_anon: DIDComm::AnonCryptAlg::XC20P_ECDH_ES_A256KW,
                                               forward: false
                                             ))
@@ -100,7 +100,7 @@ RSpec.describe "DIDComm Integration" do
     it "packs and unpacks with A256GCM" do
       pack_result = DIDComm.pack_encrypted(message, to: "did:example:bob",
                                             resolvers_config: resolvers_alice,
-                                            pack_config: DIDComm::PackEncryptedConfig.new(
+                                            pack_config: DIDComm::PackEncrypted::Config.new(
                                               enc_alg_anon: DIDComm::AnonCryptAlg::A256GCM_ECDH_ES_A256KW,
                                               forward: false
                                             ))
@@ -113,7 +113,7 @@ RSpec.describe "DIDComm Integration" do
     it "packs and unpacks with A256CBC-HS512" do
       pack_result = DIDComm.pack_encrypted(message, to: "did:example:bob",
                                             resolvers_config: resolvers_alice,
-                                            pack_config: DIDComm::PackEncryptedConfig.new(
+                                            pack_config: DIDComm::PackEncrypted::Config.new(
                                               enc_alg_anon: DIDComm::AnonCryptAlg::A256CBC_HS512_ECDH_ES_A256KW,
                                               forward: false
                                             ))
@@ -126,7 +126,7 @@ RSpec.describe "DIDComm Integration" do
     it "packs and unpacks with P-256 keys" do
       pack_result = DIDComm.pack_encrypted(message, to: "did:example:bob#key-p256-1",
                                             resolvers_config: resolvers_alice,
-                                            pack_config: DIDComm::PackEncryptedConfig.new(
+                                            pack_config: DIDComm::PackEncrypted::Config.new(
                                               enc_alg_anon: DIDComm::AnonCryptAlg::XC20P_ECDH_ES_A256KW,
                                               forward: false
                                             ))
@@ -142,7 +142,7 @@ RSpec.describe "DIDComm Integration" do
                                             to: "did:example:bob",
                                             from: "did:example:alice",
                                             resolvers_config: resolvers_alice,
-                                            pack_config: DIDComm::PackEncryptedConfig.new(forward: false))
+                                            pack_config: DIDComm::PackEncrypted::Config.new(forward: false))
 
       expect(pack_result.from_kid).to eq("did:example:alice#key-x25519-1")
 
@@ -160,7 +160,7 @@ RSpec.describe "DIDComm Integration" do
                                             to: "did:example:bob#key-p256-1",
                                             from: "did:example:alice#key-p256-1",
                                             resolvers_config: resolvers_alice,
-                                            pack_config: DIDComm::PackEncryptedConfig.new(forward: false))
+                                            pack_config: DIDComm::PackEncrypted::Config.new(forward: false))
 
       expect(pack_result.from_kid).to eq("did:example:alice#key-p256-1")
 
@@ -177,7 +177,7 @@ RSpec.describe "DIDComm Integration" do
                                             from: "did:example:alice",
                                             sign_from: "did:example:alice",
                                             resolvers_config: resolvers_alice,
-                                            pack_config: DIDComm::PackEncryptedConfig.new(forward: false))
+                                            pack_config: DIDComm::PackEncrypted::Config.new(forward: false))
 
       expect(pack_result.sign_from_kid).to eq("did:example:alice#key-1")
       expect(pack_result.from_kid).to eq("did:example:alice#key-x25519-1")
@@ -198,7 +198,7 @@ RSpec.describe "DIDComm Integration" do
                                             to: "did:example:bob",
                                             from: "did:example:alice",
                                             resolvers_config: resolvers_alice,
-                                            pack_config: DIDComm::PackEncryptedConfig.new(
+                                            pack_config: DIDComm::PackEncrypted::Config.new(
                                               protect_sender_id: true,
                                               forward: false
                                             ))

@@ -11,7 +11,7 @@ RSpec.describe "Encryption with various curves" do
     it "encrypts and decrypts with A256CBC-HS512" do
       pack_result = DIDComm.pack_encrypted(message, to: "did:example:bob#key-p384-1",
                                             resolvers_config: resolvers_alice,
-                                            pack_config: DIDComm::PackEncryptedConfig.new(
+                                            pack_config: DIDComm::PackEncrypted::Config.new(
                                               enc_alg_anon: DIDComm::AnonCryptAlg::A256CBC_HS512_ECDH_ES_A256KW,
                                               forward: false
                                             ))
@@ -27,7 +27,7 @@ RSpec.describe "Encryption with various curves" do
     it "encrypts and decrypts with A256GCM" do
       pack_result = DIDComm.pack_encrypted(message, to: "did:example:bob#key-p521-1",
                                             resolvers_config: resolvers_alice,
-                                            pack_config: DIDComm::PackEncryptedConfig.new(
+                                            pack_config: DIDComm::PackEncrypted::Config.new(
                                               enc_alg_anon: DIDComm::AnonCryptAlg::A256GCM_ECDH_ES_A256KW,
                                               forward: false
                                             ))
@@ -41,7 +41,7 @@ RSpec.describe "Encryption with various curves" do
     it "encrypts for all X25519 recipients" do
       pack_result = DIDComm.pack_encrypted(message, to: "did:example:bob",
                                             resolvers_config: resolvers_alice,
-                                            pack_config: DIDComm::PackEncryptedConfig.new(
+                                            pack_config: DIDComm::PackEncrypted::Config.new(
                                               enc_alg_anon: DIDComm::AnonCryptAlg::XC20P_ECDH_ES_A256KW,
                                               forward: false
                                             ))
@@ -60,7 +60,7 @@ RSpec.describe "Encryption with various curves" do
                                             to: "did:example:bob#key-p521-1",
                                             from: "did:example:alice#key-p521-1",
                                             resolvers_config: resolvers_alice,
-                                            pack_config: DIDComm::PackEncryptedConfig.new(forward: false))
+                                            pack_config: DIDComm::PackEncrypted::Config.new(forward: false))
 
       expect(pack_result.from_kid).to eq("did:example:alice#key-p521-1")
 
@@ -77,7 +77,7 @@ RSpec.describe "Encryption with various curves" do
                                             to: "did:example:bob",
                                             sign_from: "did:example:alice",
                                             resolvers_config: resolvers_alice,
-                                            pack_config: DIDComm::PackEncryptedConfig.new(forward: false))
+                                            pack_config: DIDComm::PackEncrypted::Config.new(forward: false))
 
       expect(pack_result.sign_from_kid).to eq("did:example:alice#key-1")
       expect(pack_result.from_kid).to be_nil
@@ -97,14 +97,14 @@ RSpec.describe "Encryption with various curves" do
       expect {
         DIDComm.pack_encrypted(msg, to: "did:example:unknown",
                                 resolvers_config: resolvers_alice,
-                                pack_config: DIDComm::PackEncryptedConfig.new(forward: false))
+                                pack_config: DIDComm::PackEncrypted::Config.new(forward: false))
       }.to raise_error(DID::DocumentNotResolvedError)
     end
 
     it "raises on tampered ciphertext" do
       pack_result = DIDComm.pack_encrypted(message, to: "did:example:bob",
                                             resolvers_config: resolvers_alice,
-                                            pack_config: DIDComm::PackEncryptedConfig.new(forward: false))
+                                            pack_config: DIDComm::PackEncrypted::Config.new(forward: false))
 
       tampered = JSON.parse(pack_result.packed_msg)
       tampered["ciphertext"] = "AAAA" + tampered["ciphertext"][4..]

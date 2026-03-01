@@ -38,7 +38,7 @@ pack_result = DIDComm.pack_encrypted(
   from:      alice[:did],
   sign_from: alice[:did],
   resolvers_config: alice_config,
-  pack_config: DIDComm::PackEncryptedConfig.new(forward: false)
+  pack_config: DIDComm::PackEncrypted::Config.new(forward: false)
 )
 
 puts "── Packed (signed + encrypted) message ──"

@@ -18,13 +18,4 @@ module DID
       OTHER
     ].freeze
   end
-
-  module VerificationMaterialFormat
-    JWK = :jwk
-    BASE58 = :base58
-    MULTIBASE = :multibase
-    OTHER = :other
-  end
-
-  VerificationMaterial = Struct.new(:format, :value, keyword_init: true)
 end

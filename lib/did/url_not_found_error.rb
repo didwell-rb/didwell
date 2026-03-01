@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 module DID
-  class Error < StandardError; end
+  class UrlNotFoundError < Error; end
 end

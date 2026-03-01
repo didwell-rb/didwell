@@ -38,7 +38,7 @@ module DIDComm
       d["id"] = @id
       d["type"] = @type
       d["body"] = @body
-      d["typ"] = DIDCommMessageTypes::PLAINTEXT
+      d["typ"] = MessageTypes::PLAINTEXT
       d["from"] = @from if @from
       d["to"] = @to if @to
       d["created_time"] = @created_time if @created_time
@@ -77,7 +77,7 @@ module DIDComm
       d = d.dup
 
       typ = d.delete("typ")
-      if typ && typ != DIDCommMessageTypes::PLAINTEXT && typ != DIDCommMessageTypes::PLAINTEXT_SHORT
+      if typ && typ != MessageTypes::PLAINTEXT && typ != MessageTypes::PLAINTEXT_SHORT
         raise MalformedMessageError.new(:invalid_plaintext, "Invalid typ: #{typ}")
       end
 

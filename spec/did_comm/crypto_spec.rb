@@ -200,7 +200,7 @@ RSpec.describe "Crypto primitives" do
 
       protected_json = DIDComm::Crypto::KeyUtils.base64url_decode(jws["signatures"][0]["protected"])
       protected_header = JSON.parse(protected_json.force_encoding("UTF-8"))
-      expect(protected_header["typ"]).to eq(DIDComm::DIDCommMessageTypes::SIGNED)
+      expect(protected_header["typ"]).to eq(DIDComm::MessageTypes::SIGNED)
     end
   end
 end

@@ -58,7 +58,7 @@ module DIDComm
 
         # Build protected header
         protected_header = {
-          "typ" => DIDCommMessageTypes::ENCRYPTED,
+          "typ" => MessageTypes::ENCRYPTED,
           "alg" => alg,
           "enc" => enc,
           "apv" => apv,
@@ -103,7 +103,7 @@ module DIDComm
 
         # Encrypt content first (need tag for 1PU KDF in some cases)
         protected_header = {
-          "typ" => DIDCommMessageTypes::ENCRYPTED,
+          "typ" => MessageTypes::ENCRYPTED,
           "alg" => alg,
           "enc" => enc,
           "apu" => apu,

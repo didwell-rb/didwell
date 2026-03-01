@@ -12,7 +12,7 @@ RSpec.describe "Input validation" do
       expect {
         DIDComm.pack_encrypted(message, to: "not-a-did",
                                 resolvers_config: resolvers_alice,
-                                pack_config: DIDComm::PackEncryptedConfig.new(forward: false))
+                                pack_config: DIDComm::PackEncrypted::Config.new(forward: false))
       }.to raise_error(DIDComm::ValueError, /'to'/)
     end
 
@@ -20,7 +20,7 @@ RSpec.describe "Input validation" do
       expect {
         DIDComm.pack_encrypted(message, to: "did:example:bob", from: "not-a-did",
                                 resolvers_config: resolvers_alice,
-                                pack_config: DIDComm::PackEncryptedConfig.new(forward: false))
+                                pack_config: DIDComm::PackEncrypted::Config.new(forward: false))
       }.to raise_error(DIDComm::ValueError, /'from'/)
     end
 
@@ -28,7 +28,7 @@ RSpec.describe "Input validation" do
       expect {
         DIDComm.pack_encrypted(message, to: "did:example:bob", sign_from: "not-a-did",
                                 resolvers_config: resolvers_alice,
-                                pack_config: DIDComm::PackEncryptedConfig.new(forward: false))
+                                pack_config: DIDComm::PackEncrypted::Config.new(forward: false))
       }.to raise_error(DIDComm::ValueError, /'sign_from'/)
     end
 
@@ -38,7 +38,7 @@ RSpec.describe "Input validation" do
                                 to: "did:example:bob#key-x25519-1",
                                 from: "did:example:alice#key-x25519-1",
                                 resolvers_config: resolvers_alice,
-                                pack_config: DIDComm::PackEncryptedConfig.new(forward: false))
+                                pack_config: DIDComm::PackEncrypted::Config.new(forward: false))
       }.not_to raise_error
     end
 
@@ -48,7 +48,7 @@ RSpec.describe "Input validation" do
       expect {
         DIDComm.pack_encrypted(msg, to: "did:example:bob", from: "did:example:alice",
                                 resolvers_config: resolvers_alice,
-                                pack_config: DIDComm::PackEncryptedConfig.new(forward: false))
+                                pack_config: DIDComm::PackEncrypted::Config.new(forward: false))
       }.to raise_error(DIDComm::ValueError, /message 'from' value/)
     end
 
@@ -58,7 +58,7 @@ RSpec.describe "Input validation" do
       expect {
         DIDComm.pack_encrypted(msg, to: "did:example:bob",
                                 resolvers_config: resolvers_alice,
-                                pack_config: DIDComm::PackEncryptedConfig.new(forward: false))
+                                pack_config: DIDComm::PackEncrypted::Config.new(forward: false))
       }.to raise_error(DIDComm::ValueError, /message 'to' value/)
     end
 
@@ -68,7 +68,7 @@ RSpec.describe "Input validation" do
       expect {
         DIDComm.pack_encrypted(msg_hash, to: "did:example:bob",
                                 resolvers_config: resolvers_alice,
-                                pack_config: DIDComm::PackEncryptedConfig.new(forward: false))
+                                pack_config: DIDComm::PackEncrypted::Config.new(forward: false))
       }.to raise_error(DIDComm::ValueError, /not a list/)
     end
   end
@@ -291,11 +291,11 @@ RSpec.describe "Input validation" do
     end
   end
 
-  describe "DIDCommMessageTypes short forms" do
+  describe "MessageTypes short forms" do
     it "defines short form constants" do
-      expect(DIDComm::DIDCommMessageTypes::ENCRYPTED_SHORT).to eq("didcomm-encrypted+json")
-      expect(DIDComm::DIDCommMessageTypes::SIGNED_SHORT).to eq("didcomm-signed+json")
-      expect(DIDComm::DIDCommMessageTypes::PLAINTEXT_SHORT).to eq("didcomm-plain+json")
+      expect(DIDComm::MessageTypes::ENCRYPTED_SHORT).to eq("didcomm-encrypted+json")
+      expect(DIDComm::MessageTypes::SIGNED_SHORT).to eq("didcomm-signed+json")
+      expect(DIDComm::MessageTypes::PLAINTEXT_SHORT).to eq("didcomm-plain+json")
     end
   end
 
@@ -347,7 +347,7 @@ RSpec.describe "Input validation" do
     it "succeeds in relaxed mode even if one key cannot decrypt" do
       pack_result = DIDComm.pack_encrypted(message, to: "did:example:bob",
                                             resolvers_config: resolvers_alice,
-                                            pack_config: DIDComm::PackEncryptedConfig.new(forward: false))
+                                            pack_config: DIDComm::PackEncrypted::Config.new(forward: false))
 
       bad_bob_secrets = TestVectors.bob_secrets.map do |secret|
         next secret unless secret.kid == "did:example:bob#key-x25519-2"
@@ -375,7 +375,7 @@ RSpec.describe "Input validation" do
     it "raises in strict mode when one key cannot decrypt" do
       pack_result = DIDComm.pack_encrypted(message, to: "did:example:bob",
                                             resolvers_config: resolvers_alice,
-                                            pack_config: DIDComm::PackEncryptedConfig.new(forward: false))
+                                            pack_config: DIDComm::PackEncrypted::Config.new(forward: false))
 
       bad_bob_secrets = TestVectors.bob_secrets.map do |secret|
         next secret unless secret.kid == "did:example:bob#key-x25519-2"
@@ -400,7 +400,7 @@ RSpec.describe "Input validation" do
         DIDComm.unpack(
           pack_result.packed_msg,
           resolvers_config: bad_resolvers_bob,
-          unpack_config: DIDComm::UnpackConfig.new(expect_decrypt_by_all_keys: true)
+          unpack_config: DIDComm::Unpack::Config.new(expect_decrypt_by_all_keys: true)
         )
       }.to raise_error(DIDComm::MalformedMessageError, /Cannot decrypt by all/)
     end
