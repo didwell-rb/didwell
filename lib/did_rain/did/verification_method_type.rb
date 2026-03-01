@@ -8,6 +8,8 @@ module DIDRain
       ED25519_VERIFICATION_KEY_2018 = "Ed25519VerificationKey2018"
       X25519_KEY_AGREEMENT_KEY_2020 = "X25519KeyAgreementKey2020"
       ED25519_VERIFICATION_KEY_2020 = "Ed25519VerificationKey2020"
+      MULTIKEY = "Multikey"
+      JSON_WEB_KEY = "JsonWebKey"
       OTHER = "Other"
 
       ALL = [
@@ -16,6 +18,8 @@ module DIDRain
         ED25519_VERIFICATION_KEY_2018,
         X25519_KEY_AGREEMENT_KEY_2020,
         ED25519_VERIFICATION_KEY_2020,
+        MULTIKEY,
+        JSON_WEB_KEY,
         OTHER
       ].freeze
     end

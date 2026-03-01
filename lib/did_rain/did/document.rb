@@ -3,14 +3,18 @@
 module DIDRain
   module DID
     class Document
-      attr_accessor :id, :authentication, :key_agreement, :assertion_method,
+      attr_accessor :id, :controller, :also_known_as,
+                    :authentication, :key_agreement, :assertion_method,
                     :capability_invocation, :capability_delegation,
                     :verification_method, :service
 
-      def initialize(id:, authentication: [], key_agreement: [], assertion_method: [],
+      def initialize(id:, controller: nil, also_known_as: nil,
+                     authentication: [], key_agreement: [], assertion_method: [],
                      capability_invocation: [], capability_delegation: [],
                      verification_method: [], service: [])
         @id = id
+        @controller = controller
+        @also_known_as = also_known_as
         @authentication = authentication || []
         @key_agreement = key_agreement || []
         @assertion_method = assertion_method || []
